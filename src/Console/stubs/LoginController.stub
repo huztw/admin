@@ -1,0 +1,11 @@
+<?php
+
+namespace DummyNamespace;
+
+use Huztw\Admin\Controllers\LoginController as BaseAuthController;
+
+class LoginController extends BaseAuthController
+{
+
+}
+

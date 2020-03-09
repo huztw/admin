@@ -1,0 +1,15 @@
+<?php
+
+namespace DummyNamespace;
+
+use Huztw\Admin\Controllers\AdminController;
+
+class ExampleController extends AdminController
+{
+    /**
+     * Title for current resource.
+     *
+     * @var string
+     */
+    protected $title = 'Example controller';
+}

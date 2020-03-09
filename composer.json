@@ -1,0 +1,47 @@
+{
+    "name": "huztw/admin",
+    "description": "laravel admin",
+    "type": "library",
+    "license": "MIT",
+    "version": "v1.0.0",
+    "authors": [
+        {
+            "name": "noob1118",
+            "email": "c0s0c0z0@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/huztw/admin",
+    "keywords": ["Laravel", "Admin"],
+    "require": {
+        "illuminate/support": "~5|~6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0",
+        "mockery/mockery": "^1.1",
+        "orchestra/testbench": "~3|~4",
+        "sempro/phpunit-pretty-print": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Huztw\\Admin\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Huztw\\Admin\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Huztw\\Admin\\AdminServiceProvider"
+            ],
+            "aliases": {
+                "Admin": "Huztw\\Admin\\Facades\\Admin"
+            }
+        }
+    }
+}
