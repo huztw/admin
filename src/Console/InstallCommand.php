@@ -103,10 +103,10 @@ class InstallCommand extends BaseCommand
         $homeController = $this->directory . '/Controllers/HomeController.php';
         $this->makefile($homeController, $this->getStub('HomeController'));
 
-        $loginController = $this->directory.'/Controllers/LoginController.php';
+        $loginController = $this->directory . '/Controllers/LoginController.php';
         $this->makefile($loginController, $this->getStub('LoginController'));
 
-        $exampleController = $this->directory.'/Controllers/ExampleController.php';
+        $exampleController = $this->directory . '/Controllers/ExampleController.php';
         $this->makefile($exampleController, $this->getStub('ExampleController'));
     }
 
@@ -117,7 +117,7 @@ class InstallCommand extends BaseCommand
      */
     protected function createBootstrapFile()
     {
-        $file = $this->directory.'/bootstrap.php';
+        $file = $this->directory . '/bootstrap.php';
         $this->makefile($file, $this->getStub('bootstrap'));
     }
 

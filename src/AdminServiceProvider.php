@@ -2,6 +2,8 @@
 
 namespace Huztw\Admin;
 
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
 class AdminServiceProvider extends ServiceProvider
@@ -15,7 +17,7 @@ class AdminServiceProvider extends ServiceProvider
         // Console\MenuCommand::class,
         Console\InstallCommand::class,
         // Console\PublishCommand::class,
-        // Console\UninstallCommand::class,
+        Console\UninstallCommand::class,
         // Console\ImportCommand::class,
         // Console\CreateUserCommand::class,
         // Console\ResetPasswordCommand::class,
@@ -49,10 +51,10 @@ class AdminServiceProvider extends ServiceProvider
     protected $middlewareGroups = [
         'admin' => [
             'admin.auth',
-            'admin.pjax',
-            'admin.log',
-            'admin.bootstrap',
-            'admin.permission',
+            // 'admin.pjax',
+            // 'admin.log',
+            // 'admin.bootstrap',
+            // 'admin.permission',
             //            'admin.session',
         ],
     ];
@@ -74,6 +76,9 @@ class AdminServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->bootForConsole();
         }
+
+        // Validation
+        $this->loadValidators();
     }
 
     /**
@@ -83,14 +88,19 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/admin.php', 'admin');
-
-        // Register the service the package provides.
-        $this->app->singleton('admin', function ($app) {
-            return new Admin;
-        });
+        $this->loadAdminAuthConfig();
 
         $this->registerRouteMiddleware();
+    }
+
+    /**
+     * Setup auth configuration.
+     *
+     * @return void
+     */
+    protected function loadAdminAuthConfig()
+    {
+        config(Arr::dot(config('admin.auth', []), 'auth.'));
     }
 
     /**
@@ -135,20 +145,43 @@ class AdminServiceProvider extends ServiceProvider
 
         // Publishing the migrations.
         $this->publishes([
-            __DIR__.'/../database/migrations' => database_path('migrations'),
-            ], 'admin-migrations');
+            __DIR__ . '/../database/migrations' => database_path('migrations'),
+        ], 'admin-migrations');
 
         // Publishing assets.
         $this->publishes([
-        __DIR__.'/../resources/assets' => public_path('vendor/huztw'),
+            __DIR__ . '/../resources/assets' => public_path('vendor/huztw-admin'),
         ], 'admin-assets');
 
         // Publishing the translation files.
         $this->publishes([
-        __DIR__.'/../resources/lang' => resource_path('lang'),
+            __DIR__ . '/../resources/lang' => resource_path('lang'),
         ], 'admin-lang');
 
-        // Registering package commands.      
+        // Registering package commands.
         $this->commands(self::$commands);
+    }
+
+    /**
+     * Validation booting.
+     *
+     * @return void
+     */
+    protected function loadValidators()
+    {
+        // The field under validation must be entirely alphabetic characters.
+        Validator::extend('alpha_unicode', function ($attribute, $value, $parameters, $validator) {
+            return is_string($value) && preg_match('/^[a-zA-Z]+$/u', $value);
+        }, trans('admin.validation.alpha_unicode'));
+
+        // The field under validation may have alpha-numeric characters, as well as dashes and underscores.
+        Validator::extend('alpha_dash_unicode', function ($attribute, $value, $parameters, $validator) {
+            return is_string($value) && preg_match('/^[a-zA-Z0-9_-]+$/u', $value);
+        }, trans('admin.validation.alpha_dash_unicode'));
+
+        // The field under validation must be entirely alpha-numeric characters.
+        Validator::extend('alpha_num_unicode', function ($attribute, $value, $parameters, $validator) {
+            return is_string($value) && preg_match('/^[a-zA-Z0-9]+$/u', $value);
+        }, trans('admin.validation.alpha_num_unicode'));
     }
 }

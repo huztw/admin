@@ -35,6 +35,6 @@ class Admin extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'admin';
+        return \Huztw\Admin\Admin::class;
     }
 }

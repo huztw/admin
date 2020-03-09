@@ -1,9 +1,9 @@
 <?php
 
-namespace Encore\Admin\Middleware;
+namespace Huztw\Admin\Middleware;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
+use Huztw\Admin\Facades\Admin;
 
 class Authenticate
 {
@@ -17,13 +17,24 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        $redirectTo = admin_base_path(config('admin.auth.redirect_to', 'auth/login'));
-
         if (Admin::guard()->guest() && !$this->shouldPassThrough($request)) {
-            return redirect()->guest($redirectTo);
+            return $this->redirectTo($request);
         }
 
         return $next($request);
+    }
+
+    /**
+     * Get the path the user should be redirected to when they are not authenticated.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return string|null
+     */
+    protected function redirectTo($request)
+    {
+        $redirectTo = admin_base_path(config('admin.auth.redirect_to', 'login'));
+
+        return redirect()->guest($redirectTo);
     }
 
     /**
@@ -36,8 +47,8 @@ class Authenticate
     protected function shouldPassThrough($request)
     {
         $excepts = config('admin.auth.excepts', [
-            'auth/login',
-            'auth/logout',
+            'login',
+            'logout',
         ]);
 
         return collect($excepts)

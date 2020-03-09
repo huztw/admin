@@ -43,9 +43,20 @@ class Admin
             $router->get('login', $authController . '@showLoginForm')->name('admin.login');
             $router->post('login', $authController . '@login');
             $router->get('logout', $authController . '@logout')->name('admin.logout');
+            $router->post('logout', $authController . '@logout');
             $router->get('register', $authController . '@showRegistrationForm')->name('admin.register');
             $router->put('register', $authController . '@register');
         });
+    }
+
+    /**
+     * Get the currently authenticated user.
+     *
+     * @return \Illuminate\Contracts\Auth\Authenticatable|null
+     */
+    public function user()
+    {
+        return $this->guard()->user();
     }
 
     /**
