@@ -1,9 +1,9 @@
 <?php
 
-namespace Encore\Admin\Middleware;
+namespace Huztw\Admin\Middleware;
 
 use Closure;
-use Encore\Admin\Facades\Admin;
+use Huztw\Admin\Facades\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\MessageBag;
 use Symfony\Component\DomCrawler\Crawler;
@@ -90,7 +90,7 @@ class Pjax
         $crawler = new Crawler($response->getContent());
 
         $response->setContent(
-            $this->makeTitle($crawler).
+            $this->makeTitle($crawler) .
             $this->fetchContents($crawler, $container)
         );
 

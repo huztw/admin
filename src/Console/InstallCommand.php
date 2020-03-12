@@ -2,12 +2,10 @@
 
 namespace Huztw\Admin\Console;
 
-use Illuminate\Console\Command as BaseCommand;
+use Huztw\Admin\Database\Seeder\AdminSeeder;
 
-class InstallCommand extends BaseCommand
+class InstallCommand extends Command
 {
-    use Command;
-
     /**
      * The name and signature of the console command.
      *
@@ -21,23 +19,6 @@ class InstallCommand extends BaseCommand
      * @var string
      */
     protected $description = 'Install the admin package';
-
-    /**
-     * Install directory.
-     *
-     * @var string
-     */
-    protected $directory = '';
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      * Execute the console command.
@@ -63,7 +44,7 @@ class InstallCommand extends BaseCommand
         $userModel = config('admin.database.users_model');
 
         if ($userModel::count() == 0) {
-            $this->call('db:seed', ['--class' => \Huztw\Admin\Database\Auth\AdminSeeder::class]);
+            $this->call('db:seed', ['--class' => AdminSeeder::class]);
         }
     }
 
@@ -74,23 +55,23 @@ class InstallCommand extends BaseCommand
      */
     protected function initAdminDirectory()
     {
-        $this->directory = config('admin.directory');
-
-        if (is_dir($this->directory)) {
-            $this->line("<error>{$this->directory} directory already exists !</error> ");
+        if (is_dir($this->installPath())) {
+            $this->line('<error>' . $this->installPath() . ' directory already exists !</error> ');
 
             return;
         }
 
-        $this->makeDir('/');
+        $this->makeDir($this->installPath());
 
-        $this->makeDir('Controllers');
+        $this->makeDir($this->installPath('Controllers'));
 
-        $this->createControllers();
+        $this->createRoutesFile();
 
         $this->createBootstrapFile();
 
-        $this->createRoutesFile();
+        $this->createControllers();
+
+        $this->line('<info>Installing huztw-admin!</info>');
     }
 
     /**
@@ -100,13 +81,13 @@ class InstallCommand extends BaseCommand
      */
     public function createControllers()
     {
-        $homeController = $this->directory . '/Controllers/HomeController.php';
+        $homeController = $this->installPath('Controllers/HomeController.php');
         $this->makefile($homeController, $this->getStub('HomeController'));
 
-        $loginController = $this->directory . '/Controllers/LoginController.php';
+        $loginController = $this->installPath('Controllers/LoginController.php');
         $this->makefile($loginController, $this->getStub('LoginController'));
 
-        $exampleController = $this->directory . '/Controllers/ExampleController.php';
+        $exampleController = $this->installPath('Controllers/ExampleController.php');
         $this->makefile($exampleController, $this->getStub('ExampleController'));
     }
 
@@ -117,7 +98,7 @@ class InstallCommand extends BaseCommand
      */
     protected function createBootstrapFile()
     {
-        $file = $this->directory . '/bootstrap.php';
+        $file = $this->installPath('bootstrap.php');
         $this->makefile($file, $this->getStub('bootstrap'));
     }
 
@@ -128,7 +109,7 @@ class InstallCommand extends BaseCommand
      */
     protected function createRoutesFile()
     {
-        $file = $this->directory . '/routes.php';
+        $file = $this->installPath('routes.php');
         $this->makefile($file, $this->getStub('routes'));
     }
 }

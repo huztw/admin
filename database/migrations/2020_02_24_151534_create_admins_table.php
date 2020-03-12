@@ -30,6 +30,13 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
+        Schema::create(config('admin.database.roles_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->unique();
+            $table->string('slug', 50)->unique();
+            $table->timestamps();
+        });
+
         Schema::create(config('admin.database.permissions_table'), function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 50)->unique();
@@ -45,6 +52,20 @@ class CreateAdminsTable extends Migration
             $table->index(['user_id', 'permission_id']);
             $table->timestamps();
         });
+
+        Schema::create(config('admin.database.role_users_table'), function (Blueprint $table) {
+            $table->integer('role_id');
+            $table->integer('user_id');
+            $table->index(['role_id', 'user_id']);
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.role_permissions_table'), function (Blueprint $table) {
+            $table->integer('role_id');
+            $table->integer('permission_id');
+            $table->index(['role_id', 'permission_id']);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -55,7 +76,11 @@ class CreateAdminsTable extends Migration
     public function down()
     {
         Schema::dropIfExists(config('admin.database.users_table'));
+        Schema::dropIfExists(config('admin.database.roles_table'));
         Schema::dropIfExists(config('admin.database.permissions_table'));
         Schema::dropIfExists(config('admin.database.user_permissions_table'));
+        Schema::dropIfExists(config('admin.database.role_users_table'));
+        Schema::dropIfExists(config('admin.database.role_permissions_table'));
+        Schema::dropIfExists(config('admin.database.role_menu_table'));
     }
 }

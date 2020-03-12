@@ -124,7 +124,7 @@ return [
         'providers' => [
             'admin' => [
                 'driver' => 'eloquent',
-                'model'  => Huztw\Admin\Database\Auth\AdminModel::class,
+                'model'  => Huztw\Admin\Database\Auth\Administrator::class,
             ],
         ],
 
@@ -178,19 +178,19 @@ return [
 
         // User tables and model.
         'users_table' => 'admin_users',
-        'users_model' => Huztw\Admin\Database\Auth\AdminModel::class,
+        'users_model' => Huztw\Admin\Database\Auth\Administrator::class,
 
         // Role table and model.
         'roles_table' => 'admin_roles',
-        'roles_model' => Encore\Admin\Auth\Database\Role::class,
+        'roles_model' => Huztw\Admin\Database\Auth\Role::class,
 
         // Permission table and model.
         'permissions_table' => 'admin_permissions',
-        'permissions_model' => Encore\Admin\Auth\Database\Permission::class,
+        'permissions_model' => Huztw\Admin\Database\Auth\Permission::class,
 
         // Menu table and model.
         'menu_table' => 'admin_menu',
-        'menu_model' => Encore\Admin\Auth\Database\Menu::class,
+        'menu_model' => Huztw\Admin\Database\Auth\Menu::class,
 
         // Pivot table for table above.
         'operation_log_table'    => 'admin_operation_log',

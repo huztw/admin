@@ -16,7 +16,7 @@ class AdminServiceProvider extends ServiceProvider
         // Console\MakeCommand::class,
         // Console\MenuCommand::class,
         Console\InstallCommand::class,
-        // Console\PublishCommand::class,
+        Console\PublishCommand::class,
         Console\UninstallCommand::class,
         // Console\ImportCommand::class,
         // Console\CreateUserCommand::class,
@@ -51,10 +51,10 @@ class AdminServiceProvider extends ServiceProvider
     protected $middlewareGroups = [
         'admin' => [
             'admin.auth',
-            // 'admin.pjax',
+            'admin.pjax',
             // 'admin.log',
-            // 'admin.bootstrap',
-            // 'admin.permission',
+            'admin.bootstrap',
+            'admin.permission',
             //            'admin.session',
         ],
     ];
@@ -68,6 +68,8 @@ class AdminServiceProvider extends ServiceProvider
     {
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'admin');
 
+        $this->ensureHttps();
+
         if (file_exists($routes = admin_path('routes.php'))) {
             $this->loadRoutesFrom($routes);
         }
@@ -77,8 +79,20 @@ class AdminServiceProvider extends ServiceProvider
             $this->bootForConsole();
         }
 
-        // Validation
         $this->loadValidators();
+    }
+
+    /**
+     * Force to set https scheme if https enabled.
+     *
+     * @return void
+     */
+    protected function ensureHttps()
+    {
+        if (config('admin.https') || config('admin.secure')) {
+            url()->forceScheme('https');
+            $this->app['request']->server->set('HTTPS', true);
+        }
     }
 
     /**

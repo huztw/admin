@@ -3,14 +3,11 @@
 namespace Huztw\Admin\Console;
 
 use Huztw\Admin\Admin;
-use Illuminate\Console\Command as BaseCommand;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 
-class AdminCommand extends BaseCommand
+class AdminCommand extends Command
 {
-    use Command;
-
     /**
      * The name and signature of the console command.
      *

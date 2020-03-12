@@ -2,17 +2,22 @@
 
 namespace Huztw\Admin;
 
-use Huztw\Admin\Controllers\LoginController;
+use Huztw\Admin\Traits\Bootstraps;
+use Huztw\Admin\Traits\Content;
+use Huztw\Admin\Traits\HasAssets;
+use Huztw\Admin\Traits\Routes;
 use Illuminate\Support\Facades\Auth;
 
 class Admin
 {
+    use Bootstraps, Content, HasAssets, Routes;
+
     /**
      * The Laravel admin version.
      *
      * @var string
      */
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.2';
 
     /**
      * Returns the long version of Huztw-admin.
@@ -22,31 +27,6 @@ class Admin
     public static function getLongVersion()
     {
         return sprintf('Huztw-admin <comment>version</comment> <info>%s</info>', self::VERSION);
-    }
-
-    /**
-     * Register the laravel-admin builtin routes.
-     *
-     * @return void
-     */
-    public function routes()
-    {
-        $attributes = [
-            'prefix'     => config('admin.route.prefix'),
-            'middleware' => config('admin.route.middleware'),
-        ];
-
-        app('router')->group($attributes, function ($router) {
-            $authController = config('admin.auth.controller', LoginController::class);
-
-            /* @var \Illuminate\Routing\Router $router */
-            $router->get('login', $authController . '@showLoginForm')->name('admin.login');
-            $router->post('login', $authController . '@login');
-            $router->get('logout', $authController . '@logout')->name('admin.logout');
-            $router->post('logout', $authController . '@logout');
-            $router->get('register', $authController . '@showRegistrationForm')->name('admin.register');
-            $router->put('register', $authController . '@register');
-        });
     }
 
     /**

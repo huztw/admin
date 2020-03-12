@@ -1,100 +1,63 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ Admin::title() }} @if($header) | {{ $header }}@endif</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-        <title>Laravel</title>
+    @if(!is_null($favicon = Admin::favicon()))
+    <link rel="shortcut icon" href="{{$favicon}}">
+    @endif
 
-        <!-- Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
+    {!! Admin::css() !!}
 
-        <!-- Styles -->
-        <style>
-            html, body {
-                background-color: #fff;
-                color: #636b6f;
-                font-family: 'Nunito', sans-serif;
-                font-weight: 200;
-                height: 100vh;
-                margin: 0;
-            }
+    <script src="{{ Admin::jQuery() }}"></script>
+    {!! Admin::headerJs() !!}
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
 
-            .full-height {
-                height: 100vh;
-            }
+</head>
 
-            .flex-center {
-                align-items: center;
-                display: flex;
-                justify-content: center;
-            }
+<body class="hold-transition {{config('admin.skin')}} {{join(' ', config('admin.layout'))}}">
 
-            .position-ref {
-                position: relative;
-            }
+@if($alert = config('admin.top_alert'))
+    <div style="text-align: center;padding: 5px;font-size: 12px;background-color: #ffffd5;color: #ff0000;">
+        {!! $alert !!}
+    </div>
+@endif
 
-            .top-right {
-                position: absolute;
-                right: 10px;
-                top: 18px;
-            }
+<div class="wrapper">
 
-            .content {
-                text-align: center;
-            }
+    @include('admin::partials.header')
 
-            .title {
-                font-size: 84px;
-            }
-
-            .links > a {
-                color: #636b6f;
-                padding: 0 25px;
-                font-size: 13px;
-                font-weight: 600;
-                letter-spacing: .1rem;
-                text-decoration: none;
-                text-transform: uppercase;
-            }
-
-            .m-b-md {
-                margin-bottom: 30px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="flex-center position-ref full-height">
-            @if (Route::has('login'))
-                <div class="top-right links">
-                    @auth
-                        <a href="{{ url('/home') }}">Home</a>
-                    @else
-                        <a href="{{ route('login') }}">Login</a>
-
-                        @if (Route::has('register'))
-                            <a href="{{ route('register') }}">Register</a>
-                        @endif
-                    @endauth
-                </div>
-            @endif
-
-            <div class="content">
-                <div class="title m-b-md">
-                    Laravel
-                </div>
-
-                <div class="links">
-                    <a href="https://laravel.com/docs">Docs</a>
-                    <a href="https://laracasts.com">Laracasts</a>
-                    <a href="https://laravel-news.com">News</a>
-                    <a href="https://blog.laravel.com">Blog</a>
-                    <a href="https://nova.laravel.com">Nova</a>
-                    <a href="https://forge.laravel.com">Forge</a>
-                    <a href="https://vapor.laravel.com">Vapor</a>
-                    <a href="https://github.com/laravel/laravel">GitHub</a>
-                </div>
-            </div>
+    <div class="content-wrapper" id="pjax-container">
+        {!! Admin::style() !!}
+        <div id="app">
+        @yield('content')
         </div>
-    </body>
+        {!! Admin::script() !!}
+        {!! Admin::html() !!}
+    </div>
+
+    @include('admin::partials.footer')
+
+</div>
+
+<button id="totop" title="Go to top" style="display: none;"><i class="fa fa-chevron-up"></i></button>
+
+<script>
+    function LA() {}
+    LA.token = "{{ csrf_token() }}";
+    LA.user = @json($_user_);
+</script>
+
+<!-- REQUIRED JS SCRIPTS -->
+{!! Admin::js() !!}
+
+</body>
 </html>

@@ -2,8 +2,6 @@
 
 namespace Huztw\Admin\Console;
 
-use Illuminate\Console\Command;
-
 class UninstallCommand extends Command
 {
     /**
@@ -11,14 +9,14 @@ class UninstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:uninstall';
+    protected $signature = 'admin:uninstall {--force}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Uninstall the admin package';
+    protected $description = 'Uninstall the admin package. If you want uninstall the publish files, you can add the `--force` option';
 
     /**
      * Execute the console command.
@@ -43,8 +41,31 @@ class UninstallCommand extends Command
      */
     protected function removeFilesAndDirectories()
     {
-        $this->laravel['files']->deleteDirectory(config('admin.directory'));
-        $this->laravel['files']->deleteDirectory(public_path('vendor/huztw-admin/'));
-        $this->laravel['files']->delete(config_path('admin.php'));
+        $this->deleteDir(config('admin.directory'));
+        $this->deleteDir(public_path('vendor/huztw-admin'));
+        $this->deleteFile(config_path('admin.php'));
+
+        if ($this->option('force')) {
+            $this->removePublish();
+        }
+    }
+
+    /**
+     * Remove publish files.
+     *
+     * @return void
+     */
+    protected function removePublish()
+    {
+        foreach ($this->getMigrations() as $migration) {
+            $this->deleteFile(database_path("migrations/$migration"));
+        }
+
+        foreach (scandir(resource_path('lang')) as $lang) {
+            if ('.' != $lang && '..' != $lang && !isset(pathinfo($lang)['extension'])) {
+                $langfile = "$lang/admin.php";
+                $this->deleteFile(resource_path("lang/$langfile"));
+            }
+        }
     }
 }
