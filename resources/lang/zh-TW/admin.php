@@ -99,10 +99,29 @@ return [
         'filter_clear'       => '顯示全部',
         'filter_placeholder' => '過濾',
     ],
+    'grid_items_selected'   => '{n} 已被選取',
+
     'menu_titles'           => [],
     'prev'                  => '上一步',
     'next'                  => '下一步',
     'quick_create'          => '快速創建',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | The following language lines are used during authentication for various
+    | messages that we need to display to the user. You are free to modify
+    | these language lines according to your application's requirements.
+    |
+     */
+
+    'auth'                  => [
+        'failed'   => '使用者名稱或密碼錯誤',
+        'throttle' => '嘗試登入太多次，請在 :seconds 秒後再試。',
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Validation Language Lines
@@ -113,6 +132,7 @@ return [
     | as the size rules. Feel free to tweak each of these messages here.
     |
      */
+
     'validation'            => [
         'alpha_unicode'      => ':attribute 只能以字母組成。',
         'alpha_dash_unicode' => ':attribute 只能以字母、數字、連接線(-)及底線(_)組成。',

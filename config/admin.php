@@ -250,7 +250,7 @@ return [
     | Set a default avatar for newly created users.
     |
     */
-    'default_avatar' => '/vendor/huztw-admin/AdminLTE/dist/img/user2-160x160.jpg',
+    'default_avatar' => '/vendor/huztw-admin/img/user-160x160.jpg',
 
     /*
     |--------------------------------------------------------------------------

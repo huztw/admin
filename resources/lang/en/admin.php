@@ -105,4 +105,37 @@ return [
     'prev'                  => 'Prev',
     'next'                  => 'Next',
     'quick_create'          => 'Quick create',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | The following language lines are used during authentication for various
+    | messages that we need to display to the user. You are free to modify
+    | these language lines according to your application's requirements.
+    |
+     */
+
+    'auth'                  => [
+        'failed'   => 'These credentials do not match our records.',
+        'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validation Language Lines
+    |--------------------------------------------------------------------------
+    |
+    | The following language lines contain the default error messages used by
+    | the validator class. Some of these rules have multiple versions such
+    | as the size rules. Feel free to tweak each of these messages here.
+    |
+     */
+
+    'validation'            => [
+        'alpha_unicode'      => 'The :attribute may only contain letters.',
+        'alpha_dash_unicode' => 'The :attribute may only contain letters, numbers, dashes and underscores.',
+        'alpha_num_unicode'  => 'The :attribute may only contain letters and numbers.',
+    ],
 ];
