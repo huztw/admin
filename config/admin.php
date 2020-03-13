@@ -10,8 +10,8 @@ return [
     | This value is the name of Huztw-admin, This setting is displayed on the
     | login page.
     |
-    */
-    'name' => 'Huztw-admin',
+     */
+    'name'                      => 'Huztw-admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -21,8 +21,8 @@ return [
     | The logo of all admin pages. You can also set it as an image by using a
     | `img` tag, eg '<img src="http://logo-url" alt="Admin logo">'.
     |
-    */
-    'logo' => '<b>Laravel</b> admin',
+     */
+    'logo'                      => '<b>Laravel</b> admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -33,8 +33,8 @@ return [
     | also set it as an image by using a `img` tag, eg
     | '<img src="http://logo-url" alt="Admin logo">'.
     |
-    */
-    'logo-mini' => '<b>La</b>',
+     */
+    'logo-mini'                 => '<b>La</b>',
 
     /*
     |--------------------------------------------------------------------------
@@ -43,8 +43,8 @@ return [
     |
     | This value is the path of huztw-admin bootstrap file.
     |
-    */
-    'bootstrap' => app_path('Admin/bootstrap.php'),
+     */
+    'bootstrap'                 => app_path('Admin/bootstrap.php'),
 
     /*
     |--------------------------------------------------------------------------
@@ -55,12 +55,12 @@ return [
     | the controller namespace, and the default middleware. If you want to
     | access through the root path, just set the prefix to empty string.
     |
-    */
-    'route' => [
+     */
+    'route'                     => [
 
-        'prefix' => env('ADMIN_ROUTE_PREFIX', 'admin'),
+        'prefix'     => env('ADMIN_ROUTE_PREFIX', 'admin'),
 
-        'namespace' => 'App\\Admin\\Controllers',
+        'namespace'  => 'App\\Admin\\Controllers',
 
         'middleware' => ['web', 'admin'],
     ],
@@ -74,8 +74,8 @@ return [
     | files of the administration page. The default is `app/Admin`, which must
     | be set before running `artisan admin::install` to take effect.
     |
-    */
-    'directory' => app_path('Admin'),
+     */
+    'directory'                 => app_path('Admin'),
 
     /*
     |--------------------------------------------------------------------------
@@ -84,8 +84,8 @@ return [
     |
     | Html title for all pages.
     |
-    */
-    'title' => 'Admin',
+     */
+    'title'                     => 'Admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -94,8 +94,8 @@ return [
     |
     | If your page is going to be accessed via https, set it to `true`.
     |
-    */
-    'https' => env('ADMIN_HTTPS', false),
+     */
+    'https'                     => env('ADMIN_HTTPS', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -107,21 +107,21 @@ return [
     |
     | You can specify a controller for `login` `logout` and other auth routes.
     |
-    */
-    'auth' => [
+     */
+    'auth'                      => [
 
-        'controller' => App\Admin\Controllers\LoginController::class,
+        'controller'  => App\Admin\Controllers\LoginController::class,
 
-        'guard' => 'admin',
+        'guard'       => 'admin',
 
-        'guards' => [
+        'guards'      => [
             'admin' => [
                 'driver'   => 'session',
                 'provider' => 'admin',
             ],
         ],
 
-        'providers' => [
+        'providers'   => [
             'admin' => [
                 'driver' => 'eloquent',
                 'model'  => Huztw\Admin\Database\Auth\Administrator::class,
@@ -129,13 +129,13 @@ return [
         ],
 
         // Add "remember me" to login form
-        'remember' => true,
+        'remember'    => true,
 
         // Redirect to the specified URI when user is not authorized.
         'redirect_to' => 'login',
 
         // The URIs that should be excluded from authorization.
-        'excepts' => [
+        'excepts'     => [
             'login',
             'logout',
             '_handle_action_',
@@ -150,11 +150,11 @@ return [
     | File system configuration for form upload files and images, including
     | disk and upload path.
     |
-    */
-    'upload' => [
+     */
+    'upload'                    => [
 
         // Disk in `config/filesystem.php`.
-        'disk' => 'admin',
+        'disk'      => 'admin',
 
         // Image and file upload path under the disk above.
         'directory' => [
@@ -170,34 +170,39 @@ return [
     |
     | Here are database settings for huztw-admin builtin model & tables.
     |
-    */
-    'database' => [
+     */
+    'database'                  => [
 
         // Database connection for following tables.
-        'connection' => '',
+        'connection'               => '',
 
         // User tables and model.
-        'users_table' => 'admin_users',
-        'users_model' => Huztw\Admin\Database\Auth\Administrator::class,
+        'users_table'              => 'admin_users',
+        'users_model'              => Huztw\Admin\Database\Auth\Administrator::class,
 
         // Role table and model.
-        'roles_table' => 'admin_roles',
-        'roles_model' => Huztw\Admin\Database\Auth\Role::class,
+        'roles_table'              => 'admin_roles',
+        'roles_model'              => Huztw\Admin\Database\Auth\Role::class,
 
         // Permission table and model.
-        'permissions_table' => 'admin_permissions',
-        'permissions_model' => Huztw\Admin\Database\Auth\Permission::class,
+        'permissions_table'        => 'admin_permissions',
+        'permissions_model'        => Huztw\Admin\Database\Auth\Permission::class,
 
         // Menu table and model.
-        'menu_table' => 'admin_menu',
-        'menu_model' => Huztw\Admin\Database\Auth\Menu::class,
+        'menu_table'               => 'admin_menu',
+        'menu_model'               => Huztw\Admin\Database\Auth\Menu::class,
+
+        // Route table and model.
+        'routes_table'             => 'admin_routes',
+        'routes_model'             => Huztw\Admin\Database\Auth\Route::class,
 
         // Pivot table for table above.
-        'operation_log_table'    => 'admin_operation_log',
-        'user_permissions_table' => 'admin_user_permissions',
-        'role_users_table'       => 'admin_role_users',
-        'role_permissions_table' => 'admin_role_permissions',
-        'role_menu_table'        => 'admin_role_menu',
+        'operation_log_table'      => 'admin_operation_log',
+        'user_permissions_table'   => 'admin_user_permissions',
+        'role_users_table'         => 'admin_role_users',
+        'role_permissions_table'   => 'admin_role_permissions',
+        'role_menu_table'          => 'admin_role_menu',
+        'routes_permissions_table' => 'admin_routes_permissions',
     ],
 
     /*
@@ -207,10 +212,10 @@ return [
     |
     | By setting this option to open or close operation log in huztw-admin.
     |
-    */
-    'operation_log' => [
+     */
+    'operation_log'             => [
 
-        'enable' => true,
+        'enable'          => true,
 
         /*
          * Only logging allowed methods in the list
@@ -223,7 +228,7 @@ return [
          * All method to path like: admin/auth/logs
          * or specific method to path like: get:admin/auth/logs.
          */
-        'except' => [
+        'except'          => [
             'admin/auth/logs*',
         ],
     ],
@@ -232,15 +237,15 @@ return [
     |--------------------------------------------------------------------------
     | Indicates whether to check route permission.
     |--------------------------------------------------------------------------
-    */
-    'check_route_permission' => true,
+     */
+    'check_route_permission'    => true,
 
     /*
     |--------------------------------------------------------------------------
     | Indicates whether to check menu roles.
     |--------------------------------------------------------------------------
-    */
-    'check_menu_roles'       => true,
+     */
+    'check_menu_roles'          => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -249,8 +254,8 @@ return [
     |
     | Set a default avatar for newly created users.
     |
-    */
-    'default_avatar' => '/vendor/huztw-admin/img/user-160x160.jpg',
+     */
+    'default_avatar'            => '/vendor/huztw-admin/img/user-160x160.jpg',
 
     /*
     |--------------------------------------------------------------------------
@@ -259,8 +264,8 @@ return [
     |
     | Supported: "tencent", "google", "yandex".
     |
-    */
-    'map_provider' => 'google',
+     */
+    'map_provider'              => 'google',
 
     /*
     |--------------------------------------------------------------------------
@@ -275,8 +280,8 @@ return [
     |    "skin-green", "skin-green-light", "skin-purple", "skin-purple-light",
     |    "skin-red", "skin-red-light", "skin-black", "skin-black-light".
     |
-    */
-    'skin' => 'skin-blue-light',
+     */
+    'skin'                      => 'skin-blue-light',
 
     /*
     |--------------------------------------------------------------------------
@@ -289,8 +294,8 @@ return [
     | Supported: "fixed", "layout-boxed", "layout-top-nav", "sidebar-collapse",
     | "sidebar-mini".
     |
-    */
-    'layout' => ['sidebar-mini', 'sidebar-collapse'],
+     */
+    'layout'                    => ['sidebar-mini', 'sidebar-collapse'],
 
     /*
     |--------------------------------------------------------------------------
@@ -299,8 +304,8 @@ return [
     |
     | This value is used to set the background image of login page.
     |
-    */
-    'login_background_image' => '',
+     */
+    'login_background_image'    => '',
 
     /*
     |--------------------------------------------------------------------------
@@ -310,8 +315,8 @@ return [
     | Whether to display the version number of huztw-admin at the footer of
     | each page
     |
-    */
-    'show_version' => true,
+     */
+    'show_version'              => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -320,8 +325,8 @@ return [
     |
     | Whether to display the environment at the footer of each page
     |
-    */
-    'show_environment' => true,
+     */
+    'show_environment'          => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -329,8 +334,8 @@ return [
     |--------------------------------------------------------------------------
     |
     | whether enable menu bind to a permission
-    */
-    'menu_bind_permission' => true,
+     */
+    'menu_bind_permission'      => true,
 
     /*
     |--------------------------------------------------------------------------
@@ -338,15 +343,15 @@ return [
     |--------------------------------------------------------------------------
     |
     | Whether enable default breadcrumb for every page content.
-    */
+     */
     'enable_default_breadcrumb' => true,
 
     /*
     |--------------------------------------------------------------------------
     | Enable/Disable assets minify
     |--------------------------------------------------------------------------
-    */
-    'minify_assets' => [
+     */
+    'minify_assets'             => [
 
         // Assets will not be minified.
         'excepts' => [
@@ -359,22 +364,22 @@ return [
     |--------------------------------------------------------------------------
     | Enable/Disable sidebar menu search
     |--------------------------------------------------------------------------
-    */
-    'enable_menu_search' => true,
+     */
+    'enable_menu_search'        => true,
 
     /*
     |--------------------------------------------------------------------------
     | Alert message that will displayed on top of the page.
     |--------------------------------------------------------------------------
-    */
-    'top_alert' => '',
+     */
+    'top_alert'                 => '',
 
     /*
     |--------------------------------------------------------------------------
     | The global Grid action display class.
     |--------------------------------------------------------------------------
-    */
-    'grid_action_class' => \Encore\Admin\Grid\Displayers\DropdownActions::class,
+     */
+    'grid_action_class'         => \Encore\Admin\Grid\Displayers\DropdownActions::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -383,8 +388,8 @@ return [
     |
     | When you use command `php artisan admin:extend` to generate extensions,
     | the extension files will be generated in this directory.
-    */
-    'extension_dir' => app_path('Admin/Extensions'),
+     */
+    'extension_dir'             => app_path('Admin/Extensions'),
 
     /*
     |--------------------------------------------------------------------------
@@ -394,8 +399,8 @@ return [
     | You can find all available extensions here
     | https://github.com/huztw-admin-extensions.
     |
-    */
-    'extensions' => [
+     */
+    'extensions'                => [
 
     ],
 ];

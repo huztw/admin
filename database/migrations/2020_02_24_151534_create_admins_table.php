@@ -46,6 +46,16 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
+        Schema::create(config('admin.database.routes_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('http_path');
+            $table->string('http_method')->nullable();
+            $table->index(['http_path', 'http_method']);
+            $table->unique(['http_path', 'http_method']);
+            $table->string('description', 190)->nullable();
+            $table->timestamps();
+        });
+
         Schema::create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('permission_id');
@@ -66,6 +76,13 @@ class CreateAdminsTable extends Migration
             $table->index(['role_id', 'permission_id']);
             $table->timestamps();
         });
+
+        Schema::create(config('admin.database.routes_permissions_table'), function (Blueprint $table) {
+            $table->integer('route_id');
+            $table->integer('permission_id');
+            $table->index(['route_id', 'permission_id']);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -78,9 +95,10 @@ class CreateAdminsTable extends Migration
         Schema::dropIfExists(config('admin.database.users_table'));
         Schema::dropIfExists(config('admin.database.roles_table'));
         Schema::dropIfExists(config('admin.database.permissions_table'));
+        Schema::dropIfExists(config('admin.database.routes_table'));
         Schema::dropIfExists(config('admin.database.user_permissions_table'));
         Schema::dropIfExists(config('admin.database.role_users_table'));
         Schema::dropIfExists(config('admin.database.role_permissions_table'));
-        Schema::dropIfExists(config('admin.database.role_menu_table'));
+        Schema::dropIfExists(config('admin.database.routes_permissions_table'));
     }
 }
