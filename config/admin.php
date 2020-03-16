@@ -58,11 +58,13 @@ return [
      */
     'route'                     => [
 
-        'prefix'     => env('ADMIN_ROUTE_PREFIX', 'admin'),
+        'prefix'      => env('ADMIN_ROUTE_PREFIX', 'admin'),
 
-        'namespace'  => 'App\\Admin\\Controllers',
+        'namespace'   => 'App\\Admin\\Controllers',
 
-        'middleware' => ['web', 'admin'],
+        'middleware'  => ['web', 'admin'],
+
+        'description' => app_path('Admin/routes.description.php'),
     ],
 
     /*

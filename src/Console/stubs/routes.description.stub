@@ -1,0 +1,37 @@
+<?php
+
+return [
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route's description
+    |--------------------------------------------------------------------------
+    |
+    | GET, POST, PUT, PATCH, DELETE
+    |
+     */
+    'GET'    => [
+        '/'              => 'Home Page',
+        'api/user'       => 'API',
+        'admin'          => "Admin's Home Page",
+        'admin/login'    => 'Login to Admin',
+        'admin/logout'   => 'Logout from Admin',
+        'admin/register' => 'Register to Admin',
+        //
+    ],
+    'POST'   => [
+        'admin/login'    => 'Login to Admin',
+        'admin/logout'   => 'Logout from Admin',
+        'admin/register' => 'Register to Admin',
+        //
+    ],
+    'PUT'    => [
+        //
+    ],
+    'PATCH'  => [
+        //
+    ],
+    'DELETE' => [
+        //
+    ],
+];

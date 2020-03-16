@@ -98,8 +98,8 @@ class InstallCommand extends Command
      */
     protected function createBootstrapFile()
     {
-        $file = $this->installPath('bootstrap.php');
-        $this->makefile($file, $this->getStub('bootstrap'));
+        $bootstrap = $this->installPath('bootstrap.php');
+        $this->makefile($bootstrap, $this->getStub('bootstrap'));
     }
 
     /**
@@ -109,7 +109,10 @@ class InstallCommand extends Command
      */
     protected function createRoutesFile()
     {
-        $file = $this->installPath('routes.php');
-        $this->makefile($file, $this->getStub('routes'));
+        $routes = $this->installPath('routes.php');
+        $this->makefile($routes, $this->getStub('routes'));
+
+        $routeDescription = $this->installPath('routes.description.php');
+        $this->makefile($routeDescription, $this->getStub('routes.description'));
     }
 }

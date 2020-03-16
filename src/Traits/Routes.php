@@ -27,7 +27,7 @@ trait Routes
             $router->get('logout', $authController . '@logout')->name('admin.logout');
             $router->post('logout', $authController . '@logout');
             $router->get('register', $authController . '@showRegistrationForm')->name('admin.register');
-            $router->put('register', $authController . '@register');
+            $router->post('register', $authController . '@register');
         });
     }
 }
