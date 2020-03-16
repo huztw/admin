@@ -74,6 +74,7 @@ class CreateAdminsTable extends Migration
             $table->integer('role_id');
             $table->integer('permission_id');
             $table->index(['role_id', 'permission_id']);
+            $table->boolean('permission')->default(true);
             $table->timestamps();
         });
 

@@ -32,8 +32,6 @@ trait Content
      * @param Closure $callable
      *
      * @return \Encore\Admin\Layout\Content
-     *
-     * @deprecated since v1.6.1
      */
     public function content(Closure $callable = null)
     {

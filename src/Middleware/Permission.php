@@ -85,8 +85,8 @@ class Permission
     protected function shouldPassThrough($request)
     {
         $excepts = config('admin.auth.excepts', [
-            'auth/login',
-            'auth/logout',
+            'login',
+            'logout',
         ]);
 
         return collect($excepts)

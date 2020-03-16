@@ -63,3 +63,14 @@
 
 </body>
 </html>
+@if($error = session()->get('error'))
+    失敗
+@elseif ($errors = session()->get('errors'))
+    @if ($errors->hasBag('error'))
+    多失敗
+    @endif
+@endif
+
+@if($success = session()->get('success'))
+    成功
+@endif

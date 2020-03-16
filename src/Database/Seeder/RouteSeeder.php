@@ -18,11 +18,20 @@ class RouteSeeder extends Seeder
     public function run()
     {
         $routes     = collect(BaseRoute::getRoutes());
-        $routesdata = [];
+        $routesdata = [
+            [
+                'http_path'   => config('admin.route.prefix') . '*',
+                'http_method' => '',
+                'description' => "All admin's permission",
+                "created_at"  => Carbon::now(),
+                "updated_at"  => Carbon::now(),
+            ],
+        ];
+
         foreach ($routes as $route) {
             $uri = $route->uri();
 
-            if (0 === strpos($uri, '_')) {
+            if (0 === strpos($uri, '_ignition')) {
                 continue;
             }
 
@@ -31,6 +40,7 @@ class RouteSeeder extends Seeder
                     array_push($routesdata, [
                         'http_path'   => $uri,
                         'http_method' => $http_method,
+                        'description' => '',
                         "created_at"  => Carbon::now(),
                         "updated_at"  => Carbon::now(),
                     ]);
