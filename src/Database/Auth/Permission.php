@@ -51,6 +51,20 @@ class Permission extends Model
     }
 
     /**
+     * Permission belongs to many routes.
+     *
+     * @return BelongsToMany
+     */
+    public function routes()
+    {
+        $pivotTable = config('admin.database.routes_permissions_table');
+
+        $relatedModel = config('admin.database.routes_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'route_id');
+    }
+
+    /**
      * If request should pass through the current permission.
      *
      * @param Request $request
@@ -157,6 +171,7 @@ class Permission extends Model
 
         static::deleting(function ($model) {
             $model->roles()->detach();
+            $model->routes()->detach();
         });
     }
 }

@@ -3,6 +3,7 @@
 namespace Huztw\Admin\Console;
 
 use Huztw\Admin\Database\Seeder\AdminSeeder;
+use Huztw\Admin\Database\Seeder\RouteSeeder;
 
 class InstallCommand extends Command
 {
@@ -40,6 +41,8 @@ class InstallCommand extends Command
     public function initDatabase()
     {
         $this->call('migrate');
+
+        $this->call('db:seed', ['--class' => RouteSeeder::class]);
 
         $userModel = config('admin.database.users_model');
 

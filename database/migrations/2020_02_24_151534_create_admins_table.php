@@ -41,8 +41,6 @@ class CreateAdminsTable extends Migration
             $table->increments('id');
             $table->string('name', 50)->unique();
             $table->string('slug', 50)->unique();
-            $table->string('http_method')->nullable();
-            $table->text('http_path')->nullable();
             $table->timestamps();
         });
 
@@ -53,6 +51,7 @@ class CreateAdminsTable extends Migration
             $table->index(['http_path', 'http_method']);
             $table->unique(['http_path', 'http_method']);
             $table->string('description', 190)->nullable();
+            $table->string('slug', 50)->nullable();
             $table->timestamps();
         });
 

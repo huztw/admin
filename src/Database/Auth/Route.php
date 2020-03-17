@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Route extends Model
 {
-    protected $fillable = ['http_path', 'description'];
+    protected $fillable = ['http_path', 'http_method', 'description'];
 
     /**
      * Create a new Eloquent model instance.
@@ -25,17 +25,41 @@ class Route extends Model
     }
 
     /**
-     * A Route belongs to many roles.
+     * Route belongs to many permissions.
      *
      * @return BelongsToMany
      */
-    public function roles()
+    public function permissions()
     {
-        $pivotTable = config('admin.database.role_menu_table');
+        $pivotTable = config('admin.database.routes_permissions_table');
 
-        $relatedModel = config('admin.database.routes_table');
+        $relatedModel = config('admin.database.permissions_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'route_id', 'role_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'route_id', 'permission_id');
+    }
+
+    /**
+     * @param $method
+     */
+    public function setHttpMethodAttribute($method)
+    {
+        if (is_array($method)) {
+            $this->attributes['http_method'] = implode(',', $method);
+        }
+    }
+
+    /**
+     * @param $method
+     *
+     * @return array
+     */
+    public function getHttpMethodAttribute($method)
+    {
+        if (is_string($method)) {
+            return array_filter(explode(',', $method));
+        }
+
+        return $method;
     }
 
     /**
@@ -48,7 +72,7 @@ class Route extends Model
         parent::boot();
 
         static::deleting(function ($model) {
-            $model->roles()->detach();
+            $model->permissions()->detach();
         });
     }
 }

@@ -5,6 +5,7 @@ namespace Huztw\Admin\Database\Seeder;
 use Huztw\Admin\Database\Auth\Administrator;
 use Huztw\Admin\Database\Auth\Permission;
 use Huztw\Admin\Database\Auth\Role;
+use Huztw\Admin\Database\Auth\Route;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -39,37 +40,37 @@ class AdminSeeder extends Seeder
         Permission::truncate();
         Permission::insert([
             [
-                'name'        => 'All permission',
-                'slug'        => '*',
-                'http_method' => '',
-                'http_path'   => '*',
+                'name' => 'All permission',
+                'slug' => '*',
             ],
             [
-                'name'        => 'Dashboard',
-                'slug'        => 'dashboard',
-                'http_method' => 'GET',
-                'http_path'   => '/',
+                'name' => 'Dashboard',
+                'slug' => 'dashboard',
             ],
             [
-                'name'        => 'Login',
-                'slug'        => 'auth.login',
-                'http_method' => '',
-                'http_path'   => "/auth/login\r\n/auth/logout",
+                'name' => 'Login',
+                'slug' => 'auth.login',
             ],
             [
-                'name'        => 'User setting',
-                'slug'        => 'auth.setting',
-                'http_method' => 'GET,PUT',
-                'http_path'   => '/auth/setting',
+                'name' => 'Register',
+                'slug' => 'auth.register',
             ],
             [
-                'name'        => 'Auth management',
-                'slug'        => 'auth.management',
-                'http_method' => '',
-                'http_path'   => "/auth/roles\r\n/auth/permissions\r\n/auth/menu\r\n/auth/logs",
+                'name' => 'User setting',
+                'slug' => 'auth.setting',
+            ],
+            [
+                'name' => 'Auth management',
+                'slug' => 'auth.management',
             ],
         ]);
 
         Role::first()->permissions()->save(Permission::first());
+
+        Route::where('http_path', config('admin.route.prefix') . '*')->first()->permissions()->save(Permission::where('slug', '*')->first());
+        Route::where('http_path', config('admin.route.prefix'))->first()->permissions()->save(Permission::where('slug', 'dashboard')->first());
+        Route::where('http_path', config('admin.route.prefix') . '/login')->first()->permissions()->save(Permission::where('slug', 'auth.login')->first());
+        Route::where('http_path', config('admin.route.prefix') . '/logout')->first()->permissions()->save(Permission::where('slug', 'auth.login')->first());
+        Route::where('http_path', config('admin.route.prefix') . '/register')->first()->permissions()->save(Permission::where('slug', 'auth.register')->first());
     }
 }
