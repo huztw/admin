@@ -47,7 +47,7 @@ class Permission extends Model
 
         $relatedModel = config('admin.database.roles_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'role_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'role_id')->withTimestamps();
     }
 
     /**
@@ -57,11 +57,11 @@ class Permission extends Model
      */
     public function routes()
     {
-        $pivotTable = config('admin.database.routes_permissions_table');
+        $pivotTable = config('admin.database.permission_routes_table');
 
         $relatedModel = config('admin.database.routes_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'route_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'route_id')->withTimestamps();
     }
 
     /**
@@ -107,6 +107,26 @@ class Permission extends Model
     public function getHttpPathAttribute($path)
     {
         return str_replace("\r\n", "\n", $path);
+    }
+
+    /**
+     * @param $value
+     *
+     * @return array
+     */
+    public function getRoutesAttribute($value)
+    {
+        $routeModel = $this->routes()->get();
+        $routes     = [];
+
+        foreach ($routeModel as $route) {
+            array_push($routes, [
+                'http_path'   => $route->http_path,
+                'http_method' => $route->http_method,
+            ]);
+        }
+
+        return $routes;
     }
 
     /**

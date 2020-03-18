@@ -58,13 +58,11 @@ return [
      */
     'route'                     => [
 
-        'prefix'      => env('ADMIN_ROUTE_PREFIX', 'admin'),
+        'prefix'     => env('ADMIN_ROUTE_PREFIX', 'admin'),
 
-        'namespace'   => 'App\\Admin\\Controllers',
+        'namespace'  => 'App\\Admin\\Controllers',
 
-        'middleware'  => ['web', 'admin'],
-
-        'description' => app_path('Admin/routes.description.php'),
+        'middleware' => ['web', 'admin'],
     ],
 
     /*
@@ -176,35 +174,35 @@ return [
     'database'                  => [
 
         // Database connection for following tables.
-        'connection'               => '',
+        'connection'              => '',
 
         // User tables and model.
-        'users_table'              => 'admin_users',
-        'users_model'              => Huztw\Admin\Database\Auth\Administrator::class,
+        'users_table'             => 'admin_users',
+        'users_model'             => Huztw\Admin\Database\Auth\Administrator::class,
 
         // Role table and model.
-        'roles_table'              => 'admin_roles',
-        'roles_model'              => Huztw\Admin\Database\Auth\Role::class,
+        'roles_table'             => 'admin_roles',
+        'roles_model'             => Huztw\Admin\Database\Auth\Role::class,
 
         // Permission table and model.
-        'permissions_table'        => 'admin_permissions',
-        'permissions_model'        => Huztw\Admin\Database\Auth\Permission::class,
+        'permissions_table'       => 'admin_permissions',
+        'permissions_model'       => Huztw\Admin\Database\Auth\Permission::class,
 
         // Menu table and model.
-        'menu_table'               => 'admin_menu',
-        'menu_model'               => Huztw\Admin\Database\Auth\Menu::class,
+        'menu_table'              => 'admin_menu',
+        'menu_model'              => Huztw\Admin\Database\Auth\Menu::class,
 
         // Route table and model.
-        'routes_table'             => 'admin_routes',
-        'routes_model'             => Huztw\Admin\Database\Auth\Route::class,
+        'routes_table'            => 'admin_routes',
+        'routes_model'            => Huztw\Admin\Database\Auth\Route::class,
 
         // Pivot table for table above.
-        'operation_log_table'      => 'admin_operation_log',
-        'user_permissions_table'   => 'admin_user_permissions',
-        'role_users_table'         => 'admin_role_users',
-        'role_permissions_table'   => 'admin_role_permissions',
-        'role_menu_table'          => 'admin_role_menu',
-        'routes_permissions_table' => 'admin_routes_permissions',
+        'operation_log_table'     => 'admin_operation_log',
+        'user_permissions_table'  => 'admin_user_permissions',
+        'role_users_table'        => 'admin_role_users',
+        'role_permissions_table'  => 'admin_role_permissions',
+        'role_menu_table'         => 'admin_role_menu',
+        'permission_routes_table' => 'admin_permission_routes',
     ],
 
     /*

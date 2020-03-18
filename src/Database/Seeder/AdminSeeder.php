@@ -18,6 +18,11 @@ class AdminSeeder extends Seeder
      */
     public function run()
     {
+        $this->call([
+            PermissionSeeder::class,
+            RouteSeeder::class,
+        ]);
+
         // create a user.
         Administrator::truncate();
         Administrator::create([
@@ -36,41 +41,14 @@ class AdminSeeder extends Seeder
         // add role to user.
         Administrator::first()->roles()->save(Role::first());
 
-        //create a permission
-        Permission::truncate();
-        Permission::insert([
-            [
-                'name' => 'All permission',
-                'slug' => '*',
-            ],
-            [
-                'name' => 'Dashboard',
-                'slug' => 'dashboard',
-            ],
-            [
-                'name' => 'Login',
-                'slug' => 'auth.login',
-            ],
-            [
-                'name' => 'Register',
-                'slug' => 'auth.register',
-            ],
-            [
-                'name' => 'User setting',
-                'slug' => 'auth.setting',
-            ],
-            [
-                'name' => 'Auth management',
-                'slug' => 'auth.management',
-            ],
-        ]);
-
+        // add permission to role.
         Role::first()->permissions()->save(Permission::first());
 
-        Route::where('http_path', config('admin.route.prefix') . '*')->first()->permissions()->save(Permission::where('slug', '*')->first());
-        Route::where('http_path', config('admin.route.prefix'))->first()->permissions()->save(Permission::where('slug', 'dashboard')->first());
-        Route::where('http_path', config('admin.route.prefix') . '/login')->first()->permissions()->save(Permission::where('slug', 'auth.login')->first());
-        Route::where('http_path', config('admin.route.prefix') . '/logout')->first()->permissions()->save(Permission::where('slug', 'auth.login')->first());
-        Route::where('http_path', config('admin.route.prefix') . '/register')->first()->permissions()->save(Permission::where('slug', 'auth.register')->first());
+        // add route to permission.
+        Permission::where('slug', '*')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '*')->first());
+        Permission::where('slug', 'dashboard')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix'))->first());
+        Permission::where('slug', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/login')->first());
+        Permission::where('slug', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/logout')->first());
+        Permission::where('slug', 'auth.register')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/register')->first());
     }
 }

@@ -68,7 +68,7 @@ class Administrator extends Model implements AuthenticatableContract
 
         $relatedModel = config('admin.database.roles_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'user_id', 'role_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'user_id', 'role_id')->withTimestamps();
     }
 
     /**
@@ -82,7 +82,7 @@ class Administrator extends Model implements AuthenticatableContract
 
         $relatedModel = config('admin.database.permissions_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'user_id', 'permission_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'user_id', 'permission_id')->withTimestamps();
     }
 
     /**

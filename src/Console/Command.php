@@ -15,7 +15,7 @@ class Command extends BaseCommand
      */
     protected function installPath($path = null)
     {
-        $directory = config('admin.directory');
+        $directory = trim(config('admin.directory'), '/');
 
         $installPath = ($path === null) ? $directory : "$directory/$path";
 

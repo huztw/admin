@@ -55,7 +55,7 @@ class Menu extends Model
 
         $relatedModel = config('admin.database.roles_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'menu_id', 'role_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'menu_id', 'role_id')->withTimestamps();
     }
 
     /**

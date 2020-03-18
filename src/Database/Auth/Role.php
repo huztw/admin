@@ -35,7 +35,7 @@ class Role extends Model
 
         $relatedModel = config('admin.database.users_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'user_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'user_id')->withTimestamps();
     }
 
     /**
@@ -49,7 +49,7 @@ class Role extends Model
 
         $relatedModel = config('admin.database.permissions_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'permission_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'permission_id')->withTimestamps();
     }
 
     /**
@@ -63,7 +63,7 @@ class Role extends Model
 
         $relatedModel = config('admin.database.menu_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'menu_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'menu_id')->withTimestamps();
     }
 
     /**

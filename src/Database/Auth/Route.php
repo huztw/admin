@@ -31,11 +31,11 @@ class Route extends Model
      */
     public function permissions()
     {
-        $pivotTable = config('admin.database.routes_permissions_table');
+        $pivotTable = config('admin.database.permission_routes_table');
 
         $relatedModel = config('admin.database.permissions_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'route_id', 'permission_id');
+        return $this->belongsToMany($relatedModel, $pivotTable, 'route_id', 'permission_id')->withTimestamps();
     }
 
     /**
