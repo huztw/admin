@@ -1,21 +1,45 @@
-# Admin
+<p align="center">
+Huztw Admin
+</p>
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Total Downloads][ico-downloads]][link-downloads]
-[![Build Status][ico-travis]][link-travis]
-[![StyleCI][ico-styleci]][link-styleci]
-
-This is where your description should go. Take a look at [contributing.md](contributing.md) to see a to do list.
 
 ## Installation
 
-Via Composer
+> This package requires PHP 7+ and Laravel 5.5
+
+First, install laravel 5.5, and make sure that the database connection settings are correct.
 
 ``` bash
 $ composer require huztw/admin
 ```
 
-## Usage
+Then run these commands to publish assets and config：
+
+``` bash
+$ php artisan admin:publish
+```
+
+After run command you can find config file in `config/admin.php`, in this file you can change the install directory,db connection or table names.
+
+At last run following command to finish install.
+
+``` bash
+$ php artisan admin:install
+```
+
+Open `http://localhost/admin/` in browser,use username `admin` and password `admin` to login.
+
+## Requirements
+
+ - PHP >= 7.0.0
+ - Laravel >= 5.5.0
+ - Fileinfo PHP Extension
+
+## Configurations
+
+The file `config/admin.php` contains an array of configurations, you can find the default configurations in there.
 
 ## Change log
 

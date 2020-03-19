@@ -18,6 +18,16 @@ class RouteSeeder extends Seeder
     /**
      * @var array
      */
+    protected $routesDefault = [];
+
+    /**
+     * @var array
+     */
+    protected $routesUser = [];
+
+    /**
+     * @var array
+     */
     protected static $httpMethods = [
         'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD',
     ];
@@ -29,16 +39,15 @@ class RouteSeeder extends Seeder
      */
     public function run()
     {
-        $settings = $this->getSettings(__DIR__ . '/../../');
+        $this->setUser(__DIR__ . '/../../');
 
-        // Check if isn't first time run
-        if (file_exists($this->settingsFile())) {
-            $this->settingsByAuto();
+        if ($this->notByInstall()) {
+            $this->setDefault();
 
-            $settings = array_merge_recursive($settings, $this->getSettings());
+            $this->setUser();
         }
 
-        $this->settings($settings);
+        $this->settings();
 
         // insert to database.
         Route::insertOrIgnore($this->getRoutes());
@@ -46,6 +55,10 @@ class RouteSeeder extends Seeder
         // reset AUTO_INCREMENT
         $increments = Route::max('id') + 1;
         DB::statement("ALTER TABLE " . config('admin.database.routes_table') . " AUTO_INCREMENT = " . $increments);
+
+        if ($this->notByInstall()) {
+            $this->removeUseless();
+        }
     }
 
     /**
@@ -53,13 +66,37 @@ class RouteSeeder extends Seeder
      *
      * @param $directory
      *
-     * @return array
+     * @return void
      */
-    protected function getSettings($directory = null): array
+    protected function setUser($directory = null)
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['routes'] ?? [];
+        if (isset($settings['routes'])) {
+            foreach ($settings['routes'] as $http_path => $array) {
+                foreach ($array as $http_method => $name) {
+                    if (is_int(($http_method))) {
+                        $http_method = '';
+                    }
+
+                    array_push($this->routesUser, [
+                        'http_path'   => $http_path,
+                        'http_method' => $http_method,
+                        'name'        => $name,
+                    ]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Isn't Run by install?
+     *
+     * @return bool
+     */
+    protected function notByInstall()
+    {
+        return file_exists($this->settingsFile());
     }
 
     /**
@@ -79,24 +116,23 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Set the already exist routes settings automatically.
+     * Set the already exist routes.
      *
      * @return void
      */
-    protected function settingsByAuto()
+    protected function setDefault()
     {
-        $routesCollect = collect(BaseRoute::getRoutes());
-
-        foreach ($routesCollect as $route) {
+        foreach (collect(BaseRoute::getRoutes()) as $route) {
             $uri = $route->uri();
 
+            // except
             if (0 === strpos($uri, '_ignition')) {
                 continue;
             }
 
             foreach ($route->methods() as $http_method) {
                 if ('HEAD' !== $http_method) {
-                    $this->setRoutes([
+                    array_push($this->routesDefault, [
                         'http_path'   => $uri,
                         'http_method' => $http_method,
                     ]);
@@ -106,59 +142,41 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Get the routes settings.
-     *
-     * @param $routes
+     * Settings routes.
      *
      * @return void
      */
-    protected function settings($routes)
+    protected function settings()
     {
-        foreach ($routes as $path => $method_name) {
-            foreach ($method_name as $method => $name) {
-                if (is_int($method)) {
-                    $method = '';
-                }
+        $this->routes = $this->routesDefault;
 
-                $route = [
-                    'http_path'   => $path,
-                    'http_method' => $method,
-                    'name'        => $name,
-                ];
-
-                if ($this->overwriteRoute($route)) {
-                    continue;
-                }
-
-                $this->setRoutes($route);
+        foreach ($this->routesUser as $route) {
+            if ($this->notByInstall()) {
+                $this->removeNotInDefault($route);
             }
+
+            array_push($this->routes, $route);
         }
+
+        $this->routes = array_filter(array_map([$this, 'formatRoute'], $this->routes));
     }
 
     /**
-     * If the route for existence, then overwrite it.
+     * Remove the route which one not in default.
      *
-     * @return bool
+     * @param $route
+     *
+     * @return void
      */
-    protected function overwriteRoute($route)
+    protected function removeNotInDefault($route)
     {
-        $exist = false;
+        $http_methods = explode(',', $route['http_method']);
 
-        foreach ($this->routes as $key => $finished) {
-            if ($route['http_path'] == $finished['http_path']) {
-                if (is_array(($methods = $this->httpMethodFormat($route['http_method'], true)))) {
-                    if ($this->isRepeatRoute($methods, $finished['http_method'])) {
-                        unset($this->routes[$key]);
-                    }
-                } elseif ($route['http_method'] == $finished['http_method']) {
-                    $this->routes[$key]['name'] = $route['name'];
-
-                    $exist = true;
-                }
+        foreach ($this->routes as $key => $default) {
+            if ($route['http_path'] == $default['http_path'] && in_array($default['http_method'], $http_methods)) {
+                unset($this->routes[$key]);
             }
         }
-
-        return $exist;
     }
 
     /**
@@ -181,52 +199,44 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Set the routes.
+     * Format the route.
      *
      * @param $route
      *
-     * @return void
+     * @return array
      */
-    protected function setRoutes($route)
+    protected function formatRoute($route)
     {
-        if (($http_method = $this->httpMethodFormat($route['http_method'])) === false) {
-            return;
+        $http_method = trim($route['http_method']);
+
+        if ($this->correctHttpMethod($http_method)) {
+            $route['http_method'] = $http_method;
+            $route['name']        = $route['name'] ?? null;
+            $route['created_at']  = Carbon::now();
+            $route['updated_at']  = Carbon::now();
+
+            return $route;
         }
 
-        array_push($this->routes, [
-            'http_path'   => $route['http_path'],
-            'http_method' => $http_method,
-            'name'        => $route['name'] ?? null,
-            'created_at'  => Carbon::now(),
-            'updated_at'  => Carbon::now(),
-        ]);
+        return null;
     }
 
     /**
-     * Format the Http Method.
+     * Is correct Http Method?
      *
-     * @param $str
-     * @param $array
-     *
-     * @return mixed
+     * @return bool
      */
-    protected function httpMethodFormat($str, $array = false)
+    protected function correctHttpMethod($methods)
     {
-        $http_methods = [];
-
-        foreach (explode(',', $str) as $http_method) {
-            if (in_array(trim($http_method), self::$httpMethods) || empty($http_method)) {
-                array_push($http_methods, $http_method);
-            } else {
-                return false;
+        if (!empty($methods)) {
+            foreach (explode(',', $methods) as $method) {
+                if (!in_array($method, self::$httpMethods)) {
+                    return false;
+                }
             }
         }
 
-        if ($array === false) {
-            return implode(',', $http_methods);
-        }
-
-        return count($http_methods) > 1 ? $http_methods : implode(',', $http_methods);
+        return true;
     }
 
     /**
@@ -248,5 +258,111 @@ class RouteSeeder extends Seeder
         array_multisort($paths, SORT_ASC, $routes);
 
         return $routes;
+    }
+
+    /**
+     * Get the original routes.
+     *
+     * @return array
+     */
+    protected function originRoutes()
+    {
+        $routes = [];
+
+        foreach (Route::get() as $route) {
+            $routes[$route->id] = [
+                'http_path'   => $route->http_path,
+                'http_method' => $route->http_method,
+            ];
+        }
+
+        return $routes;
+    }
+
+    /**
+     * Remove the useless routes.
+     *
+     * @return void
+     */
+    protected function removeUseless()
+    {
+        $defaults = [];
+
+        foreach ($this->routesDefault as $default) {
+            if (!isset($defaults[$default['http_path']])) {
+                $defaults[$default['http_path']] = [$default['http_method']];
+            } else {
+                array_push($defaults[$default['http_path']], $default['http_method']);
+            }
+        }
+
+        foreach ($this->originRoutes() as $id => $origin) {
+            if (!$this->matchHttpPaths($origin['http_path'], array_keys($defaults))) {
+                Route::destroy($id);
+                continue;
+            }
+
+            if (isset($defaults[$origin['http_path']])) {
+                $defaultsMethods = $defaults[$origin['http_path']];
+            } else {
+                $defaultsMethods = [];
+                foreach ($defaults as $defaultPath => $defaultMethods) {
+                    if ($this->matchHttpPath($origin['http_path'], $defaultPath)) {
+                        foreach ($defaultMethods as $defaultMethod) {
+                            if (!in_array($defaultMethod, $defaultsMethods)) {
+                                array_push($defaultsMethods, $defaultMethod);
+                            }
+                        }
+                    }
+                }
+            }
+
+            $http_methods = $origin['http_method'];
+
+            foreach ($origin['http_method'] as $key => $http_method) {
+                if (!in_array($http_method, $defaultsMethods)) {
+                    unset($http_methods[$key]);
+                }
+            }
+
+            if (count($http_methods) != count($origin['http_method'])) {
+                if (count($http_methods) == 0) {
+                    Route::destroy($id);
+                } else {
+                    Route::where('id', $id)->update(['http_method' => implode(',', $http_methods)]);
+                }
+            }
+        }
+    }
+
+    /**
+     * match.
+     *
+     * @return void
+     */
+    protected function matchHttpPaths($path, $array)
+    {
+        foreach ($array as $value) {
+            if ($this->matchHttpPath($path, $value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * match.
+     *
+     * @return void
+     */
+    protected function matchHttpPath($path, $value)
+    {
+        if ('*' == $path) {
+            return true;
+        }
+        $path = str_replace('/', '\/', $path);
+
+        return preg_match("/$path/", $value);
     }
 }

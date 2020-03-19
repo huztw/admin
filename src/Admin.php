@@ -17,7 +17,7 @@ class Admin
      *
      * @var string
      */
-    const VERSION = '1.0.3';
+    const VERSION = '1.0.6';
 
     /**
      * Returns the long version of Huztw-admin.
