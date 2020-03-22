@@ -28,8 +28,12 @@ class PushCommand extends Command
      */
     public function handle()
     {
+        $this->line('<info>Pushing table</info>');
+
         $this->call('db:seed', ['--class' => RouteSeeder::class]);
 
         $this->call('db:seed', ['--class' => PermissionSeeder::class]);
+
+        $this->line('<info>Pushing complete</info>');
     }
 }

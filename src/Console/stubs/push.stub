@@ -7,7 +7,7 @@ return [
     | routes settings
     |--------------------------------------------------------------------------
     |
-    | use GET, POST, PUT, PATCH, DELETE, ''
+    | Use 'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT'; Or use '' include all
     |
      */
     'routes'      => [
