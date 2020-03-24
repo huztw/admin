@@ -9,7 +9,8 @@ class UninstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'admin:uninstall {--force}';
+    protected $signature = 'admin:uninstall
+                            {--force : Uninstall the publish files}';
 
     /**
      * The console command description.

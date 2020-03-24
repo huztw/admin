@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Route extends Model
 {
-    protected $fillable = ['http_path', 'http_method', 'description'];
+    protected $fillable = ['http_path', 'http_method', 'name'];
 
     /**
      * Create a new Eloquent model instance.

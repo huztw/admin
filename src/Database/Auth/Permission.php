@@ -110,26 +110,6 @@ class Permission extends Model
     }
 
     /**
-     * @param $value
-     *
-     * @return array
-     */
-    public function getRoutesAttribute($value)
-    {
-        $routeModel = $this->routes()->get();
-        $routes     = [];
-
-        foreach ($routeModel as $route) {
-            array_push($routes, [
-                'http_path'   => $route->http_path,
-                'http_method' => $route->http_method,
-            ]);
-        }
-
-        return $routes;
-    }
-
-    /**
      * If a request match the specific HTTP method and path.
      *
      * @param array   $match

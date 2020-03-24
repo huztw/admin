@@ -15,7 +15,7 @@ class Administrator extends Model implements AuthenticatableContract
 {
     use Authenticatable;
 
-    protected $fillable = ['username', 'password', 'name', 'email'];
+    protected $fillable = ['username', 'password', 'name'];
 
     /**
      * Create a new Eloquent model instance.
@@ -31,30 +31,6 @@ class Administrator extends Model implements AuthenticatableContract
         $this->setTable(config('admin.database.users_table'));
 
         parent::__construct($attributes);
-    }
-
-    /**
-     * Get avatar attribute.
-     *
-     * @param string $avatar
-     *
-     * @return string
-     */
-    public function getAvatarAttribute($avatar)
-    {
-        if (url()->isValidUrl($avatar)) {
-            return $avatar;
-        }
-
-        $disk = config('admin.upload.disk');
-
-        if ($avatar && array_key_exists($disk, config('filesystems.disks'))) {
-            return Storage::disk(config('admin.upload.disk'))->url($avatar);
-        }
-
-        $default = config('admin.default_avatar') ?: '/vendor/huztw-admin/img/user-160x160.jpg';
-
-        return admin_asset($default);
     }
 
     /**
@@ -92,7 +68,36 @@ class Administrator extends Model implements AuthenticatableContract
      */
     public function allPermissions()
     {
-        return $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($this->permissions);
+        return $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($this->permissions)
+            ->map(function ($item, $key) {
+                $item->routes = Permission::find($item->id)->routes;
+
+                return $item;
+            });
+    }
+
+    /**
+     * Get avatar attribute.
+     *
+     * @param string $avatar
+     *
+     * @return string
+     */
+    public function getAvatarAttribute($avatar)
+    {
+        if (url()->isValidUrl($avatar)) {
+            return $avatar;
+        }
+
+        $disk = config('admin.upload.disk');
+
+        if ($avatar && array_key_exists($disk, config('filesystems.disks'))) {
+            return Storage::disk(config('admin.upload.disk'))->url($avatar);
+        }
+
+        $default = config('admin.default_avatar') ?: '/vendor/huztw-admin/img/user-160x160.jpg';
+
+        return admin_asset($default);
     }
 
     /**

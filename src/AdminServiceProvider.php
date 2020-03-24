@@ -20,7 +20,7 @@ class AdminServiceProvider extends ServiceProvider
         Console\PushCommand::class,
         Console\UninstallCommand::class,
         // Console\ImportCommand::class,
-        // Console\CreateUserCommand::class,
+        Console\UserCommand::class,
         // Console\ResetPasswordCommand::class,
         // Console\ExtendCommand::class,
         // Console\ExportSeedCommand::class,
