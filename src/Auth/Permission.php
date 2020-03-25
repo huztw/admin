@@ -2,6 +2,7 @@
 
 namespace Huztw\Admin\Auth;
 
+use Huztw\Admin\Database\Auth\Permission as Checker;
 use Huztw\Admin\Facades\Admin;
 use Huztw\Admin\Middleware\Pjax;
 
@@ -16,90 +17,72 @@ class Permission
      */
     public static function check($permission)
     {
-        if (static::isAdministrator()) {
-            return true;
-        }
-
         if (is_array($permission)) {
             collect($permission)->each(function ($permission) {
                 call_user_func([self::class, 'check'], $permission);
             });
 
-            return;
+            return true;
+        }
+
+        if (static::isDisable($permission)) {
+            return true;
+        }
+
+        if (!Admin::user()) {
+            static::error(401);
         }
 
         if (Admin::user()->cannot($permission)) {
-            static::error();
-        }
-    }
-
-    /**
-     * Roles allowed to access.
-     *
-     * @param $roles
-     *
-     * @return true
-     */
-    public static function allow($roles)
-    {
-        if (static::isAdministrator()) {
-            return true;
-        }
-
-        if (!Admin::user()->inRoles($roles)) {
-            static::error();
-        }
-    }
-
-    /**
-     * Don't check permission.
-     *
-     * @return bool
-     */
-    public static function free()
-    {
-        return true;
-    }
-
-    /**
-     * Roles denied to access.
-     *
-     * @param $roles
-     *
-     * @return true
-     */
-    public static function deny($roles)
-    {
-        if (static::isAdministrator()) {
-            return true;
-        }
-
-        if (Admin::user()->inRoles($roles)) {
-            static::error();
+            static::error(403);
         }
     }
 
     /**
      * Send error response page.
+     *
+     * @param $status
      */
-    public static function error()
+    public static function error($status)
     {
-        $response = response(Admin::content()->withError(trans('admin.deny')));
+        $response = response(Admin::content()->withError(self::httpStatusMessage($status)));
 
         if (!request()->pjax() && request()->ajax()) {
-            abort(403, trans('admin.deny'));
+            abort($status, self::httpStatusMessage($status));
         }
+        abort($status, self::httpStatusMessage($status));
 
         Pjax::respond($response);
     }
 
     /**
-     * If current user is administrator.
+     * Http response status message.
+     *
+     * @param $roles
      *
      * @return mixed
      */
-    public static function isAdministrator()
+    protected static function httpStatusMessage($status)
     {
-        return Admin::user()->isRole('administrator');
+        $httpStatus = [
+            401 => 'admin.deny',
+            403 => 'admin.deny',
+        ];
+
+        if (isset($httpStatus[$status])) {
+            return trans($httpStatus[$status]);
+        }
+
+        return null;
+    }
+
+    /**
+     * If permission is disable.
+     *
+     * @return mixed
+     */
+    public static function isDisable($permission)
+    {
+        return Checker::where('slug', $permission)->first()->disable;
     }
 }

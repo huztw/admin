@@ -118,11 +118,15 @@ class Administrator extends Model implements AuthenticatableContract
             return true;
         }
 
-        if ($this->permissions->pluck('slug')->contains($ability)) {
-            return true;
+        if ($this->allPermissions()->pluck('slug')->contains($ability)) {
+            return $this->allPermissions()->contains(function ($item, $key) use ($ability) {
+                if ($ability == $item->slug) {
+                    return $item->permission;
+                }
+            });
         }
 
-        return $this->roles->pluck('permissions')->flatten()->pluck('slug')->contains($ability);
+        return false;
     }
 
     /**
@@ -144,7 +148,9 @@ class Administrator extends Model implements AuthenticatableContract
      */
     public function isAdministrator(): bool
     {
-        return $this->isRole('administrator');
+        $administrator = config('admin.administrator', 'administrator');
+
+        return $this->isRole($administrator);
     }
 
     /**

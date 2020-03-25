@@ -40,7 +40,7 @@ class Permission
         if (!Admin::user()->allPermissions()->first(function ($permission) use ($request) {
             return $permission->shouldPassThrough($request);
         })) {
-            Checker::error();
+            Checker::error(403);
         }
 
         return $next($request);

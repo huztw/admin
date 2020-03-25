@@ -63,14 +63,14 @@
 
 </body>
 </html>
-@if($error = session()->get('error'))
-    失敗
-@elseif ($errors = session()->get('errors'))
+@if($error = admin_messages('error'))
+{!! $error->first('title') !!}
+@elseif ($errors = admin_messages('errors'))
     @if ($errors->hasBag('error'))
-    多失敗
+    {!! $error->first('title') !!}
     @endif
 @endif
 
-@if($success = session()->get('success'))
-    成功
+@if($success = admin_messages('success'))
+{!! $success->first('title') !!}
 @endif

@@ -140,6 +140,21 @@ if (!function_exists('admin_info')) {
     }
 }
 
+if (!function_exists('admin_messages')) {
+
+    /**
+     * Get the message bag from session.
+     *
+     * @param string $title
+     * @param string $message
+     * @param string $type
+     */
+    function admin_messages($error)
+    {
+        return session()->get($error);
+    }
+}
+
 if (!function_exists('admin_asset')) {
 
     /**
