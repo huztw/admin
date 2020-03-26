@@ -8,6 +8,11 @@ use Huztw\Admin\Facades\Admin;
 class Authenticate
 {
     /**
+     * @var array
+     */
+    protected $excepts = [];
+
+    /**
      * Handle an incoming request.
      *
      * @param \Illuminate\Http\Request $request
@@ -17,7 +22,7 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        if (Admin::guard()->guest() && !$this->shouldPassThrough($request)) {
+        if (Admin::guard()->guest() && !$this->isExcept($request)) {
             return $this->redirectTo($request);
         }
 
@@ -44,21 +49,18 @@ class Authenticate
      *
      * @return bool
      */
-    protected function shouldPassThrough($request)
+    protected function isExcept($request): bool
     {
-        $excepts = config('admin.auth.excepts', [
-            'login',
-            'logout',
-        ]);
+        $admin_login = trim(admin_base_path(config('admin.auth.redirect_to', 'login')), '/');
 
-        return collect($excepts)
-            ->map('admin_base_path')
-            ->contains(function ($except) use ($request) {
-                if ($except !== '/') {
-                    $except = trim($except, '/');
-                }
+        array_push($this->excepts, $admin_login);
 
-                return $request->is($except);
-            });
+        foreach ($this->excepts as $except) {
+            if ($request->is($except)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

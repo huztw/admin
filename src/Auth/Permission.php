@@ -9,6 +9,15 @@ use Huztw\Admin\Middleware\Pjax;
 class Permission
 {
     /**
+     * @var array
+     */
+    protected static $httpStatus = [
+        401 => 'admin.deny',
+        403 => 'admin.deny',
+        423 => 'admin.deny',
+    ];
+
+    /**
      * Check permission.
      *
      * @param $permission
@@ -45,6 +54,7 @@ class Permission
      */
     public static function error($status)
     {
+        abort($status, self::httpStatusMessage($status));
         $response = response(Admin::content()->withError(self::httpStatusMessage($status)));
 
         if (!request()->pjax() && request()->ajax()) {
@@ -58,19 +68,14 @@ class Permission
     /**
      * Http response status message.
      *
-     * @param $roles
+     * @param $status
      *
-     * @return mixed
+     * @return string|null
      */
     protected static function httpStatusMessage($status)
     {
-        $httpStatus = [
-            401 => 'admin.deny',
-            403 => 'admin.deny',
-        ];
-
-        if (isset($httpStatus[$status])) {
-            return trans($httpStatus[$status]);
+        if (isset(self::$httpStatus[$status])) {
+            return trans(self::$httpStatus[$status]);
         }
 
         return null;
@@ -79,9 +84,11 @@ class Permission
     /**
      * If permission is disable.
      *
-     * @return mixed
+     * @param $permission
+     *
+     * @return bool
      */
-    public static function isDisable($permission)
+    public static function isDisable($permission): bool
     {
         return Checker::where('slug', $permission)->first()->disable;
     }

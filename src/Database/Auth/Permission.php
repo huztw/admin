@@ -4,7 +4,6 @@ namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class Permission extends Model
 {
@@ -12,13 +11,6 @@ class Permission extends Model
      * @var array
      */
     protected $fillable = ['name', 'slug', 'http_method', 'http_path'];
-
-    /**
-     * @var array
-     */
-    public static $httpMethods = [
-        'GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD',
-    ];
 
     /**
      * Create a new Eloquent model instance.
@@ -65,78 +57,6 @@ class Permission extends Model
     }
 
     /**
-     * If request should pass through the current permission.
-     *
-     * @param Request $request
-     *
-     * @return bool
-     */
-    public function shouldPassThrough(Request $request): bool
-    {
-        if (empty($this->http_method) && empty($this->http_path)) {
-            return true;
-        }
-
-        $method = $this->http_method;
-
-        $matches = array_map(function ($path) use ($method) {
-            if (Str::contains($path, ':')) {
-                list($method, $path) = explode(':', $path);
-                $method              = explode(',', $method);
-            }
-
-            return compact('method', 'path');
-        }, explode("\n", $this->http_path));
-
-        foreach ($matches as $match) {
-            if ($this->matchRequest($match, $request)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * filter \r.
-     *
-     * @param string $path
-     *
-     * @return mixed
-     */
-    public function getHttpPathAttribute($path)
-    {
-        return str_replace("\r\n", "\n", $path);
-    }
-
-    /**
-     * If a request match the specific HTTP method and path.
-     *
-     * @param array   $match
-     * @param Request $request
-     *
-     * @return bool
-     */
-    protected function matchRequest(array $match, Request $request): bool
-    {
-        if ($match['path'] == '/') {
-            $path = '/';
-        } else {
-            $path = trim($match['path'], '/');
-        }
-
-        if (!$request->is($path)) {
-            return false;
-        }
-
-        $method = collect($match['method'])->filter()->map(function ($method) {
-            return strtoupper($method);
-        });
-
-        return $method->isEmpty() || $method->contains($request->method());
-    }
-
-    /**
      * @param $method
      */
     public function setHttpMethodAttribute($method)
@@ -158,6 +78,30 @@ class Permission extends Model
         }
 
         return $method;
+    }
+
+    /**
+     * If request should pass through the current permission.
+     *
+     * @param Request $request
+     *
+     * @return true|null
+     */
+    public function shouldPassThrough(Request $request)
+    {
+        return $this->routes->first(function ($route) use ($request) {
+            if ($route::isHttpPath($request, $route->http_path)) {
+                if (empty($route->http_method)) {
+                    return true;
+                }
+
+                foreach ($route->http_method as $http_method) {
+                    if ($request->isMethod($http_method)) {
+                        return true;
+                    }
+                }
+            }
+        });
     }
 
     /**

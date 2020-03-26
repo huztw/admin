@@ -3,41 +3,49 @@
 namespace Huztw\Admin\Middleware;
 
 use Huztw\Admin\Auth\Permission as Checker;
+use Huztw\Admin\Database\Auth\Route;
 use Huztw\Admin\Facades\Admin;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class Permission
 {
     /**
-     * @var string
+     * @var object
      */
-    protected $middlewarePrefix = 'admin.permission:';
+    protected $user;
 
     /**
      * Handle an incoming request.
      *
      * @param \Illuminate\Http\Request $request
      * @param \Closure                 $next
-     * @param array                    $args
+     * @param string                   $user
      *
      * @return mixed
      */
-    public function handle(Request $request, \Closure $next, ...$args)
+    public function handle(Request $request, \Closure $next, $user = null)
     {
         if (config('admin.check_route_permission') === false) {
             return $next($request);
         }
 
-        if (!Admin::user() || !empty($args) || $this->shouldPassThrough($request)) {
+        $visibility = $this->getRouteVisibility($request);
+
+        if (Route::getPrivate() == $visibility) {
+            Checker::error(423);
+        }
+
+        if (Route::getPublic() == $visibility) {
             return $next($request);
         }
 
-        if ($this->checkRoutePermission($request)) {
-            return $next($request);
+        $this->setUser($user);
+
+        if (!$this->user::user()) {
+            Checker::error(404);
         }
 
-        if (!Admin::user()->allPermissions()->first(function ($permission) use ($request) {
+        if (!$this->user::user()->allPermissions()->first(function ($permission) use ($request) {
             return $permission->shouldPassThrough($request);
         })) {
             Checker::error(403);
@@ -47,56 +55,40 @@ class Permission
     }
 
     /**
-     * If the route of current request contains a middleware prefixed with 'admin.permission:',
-     * then it has a manually set permission middleware, we need to handle it first.
-     *
-     * @param Request $request
-     *
-     * @return bool
-     */
-    public function checkRoutePermission(Request $request)
-    {
-        if (!$middleware = collect($request->route()->middleware())->first(function ($middleware) {
-            return Str::startsWith($middleware, $this->middlewarePrefix);
-        })) {
-            return false;
-        }
-
-        $args = explode(',', str_replace($this->middlewarePrefix, '', $middleware));
-
-        $method = array_shift($args);
-
-        if (!method_exists(Checker::class, $method)) {
-            throw new \InvalidArgumentException("Invalid permission method [$method].");
-        }
-
-        call_user_func_array([Checker::class, $method], [$args]);
-
-        return true;
-    }
-
-    /**
-     * Determine if the request has a URI that should pass through verification.
+     * Get route's visibility.
      *
      * @param \Illuminate\Http\Request $request
      *
-     * @return bool
+     * @return string
      */
-    protected function shouldPassThrough($request)
+    protected function getRouteVisibility($request)
     {
-        $excepts = config('admin.auth.excepts', [
-            'login',
-            'logout',
-        ]);
+        if (Route::getProtectedRoute($request) !== null) {
+            return Route::getProtectedRoute($request)->visibility;
+        }
 
-        return collect($excepts)
-            ->map('admin_base_path')
-            ->contains(function ($except) use ($request) {
-                if ($except !== '/') {
-                    $except = trim($except, '/');
-                }
+        return Route::getPublic();
+    }
 
-                return $request->is($except);
-            });
+    /**
+     * Set User.
+     *
+     * @param $user
+     *
+     * @return void
+     */
+    protected function setUser($user)
+    {
+        if (empty($user)) {
+            $this->user = Admin::class;
+        } else {
+            $getuser = config('admin.permission.user.' . $user);
+
+            if (!$getuser) {
+                throw new \InvalidArgumentException("Invalid permission user class [$user].");
+            }
+
+            $this->user = $getuser;
+        }
     }
 }

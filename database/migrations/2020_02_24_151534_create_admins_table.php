@@ -51,6 +51,7 @@ class CreateAdminsTable extends Migration
             $table->string('name', 50)->nullable();
             $table->string('http_method');
             $table->string('http_path');
+            $table->string('visibility')->default('public');
             $table->index(['http_path', 'http_method']);
             $table->unique(['http_path', 'http_method']);
             $table->timestamps();

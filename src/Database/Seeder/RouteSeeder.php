@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Huztw\Admin\Database\Auth\Route;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Route as BaseRoute;
 
 class RouteSeeder extends Seeder
 {
@@ -26,27 +25,13 @@ class RouteSeeder extends Seeder
     protected $routesUser = [];
 
     /**
-     * @var array
-     */
-    protected static $httpMethods = [
-        'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT',
-    ];
-
-    /**
-     * @var array
-     */
-    protected static $exceptMethods = [
-        'HEAD', 'OPTIONS',
-    ];
-
-    /**
      * Run the database seeds.
      *
      * @return void
      */
     public function run()
     {
-        $this->setUser(__DIR__ . '/../../');
+        $this->setAdmin();
 
         if ($this->notByInstall()) {
             $this->setDefault();
@@ -69,7 +54,32 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Get the settings.
+     * Set admin's routes by settings file.
+     *
+     * @return void
+     */
+    protected function setAdmin()
+    {
+        $this->setUser(__DIR__ . '/../../');
+
+        $except = [
+            'admin/login',
+            'admin/logout',
+        ];
+
+        $this->routesUser = array_map(function ($route) use ($except) {
+            if (!in_array($route['http_path'], $except)) {
+                $route['visibility'] = $this->visibility('protected');
+            } else {
+                $route['visibility'] = $this->visibility('public');
+            }
+
+            return $route;
+        }, $this->routesUser);
+    }
+
+    /**
+     * Set routes by settings file.
      *
      * @param $directory
      *
@@ -103,13 +113,33 @@ class RouteSeeder extends Seeder
     }
 
     /**
+     * Get route visibility
+     *
+     * @param $setting
+     *
+     * @return string
+     */
+    protected function visibility($setting)
+    {
+        $visibility = Route::getPublic();
+
+        if ('private' == $setting) {
+            $visibility = Route::getPrivate();
+        } elseif ('protected' == $setting) {
+            $visibility = Route::getProtected();
+        }
+
+        return $visibility;
+    }
+
+    /**
      * Get Http Method
      *
      * @return array
      */
     protected function httpMethods()
     {
-        return array_diff(self::$httpMethods, self::$exceptMethods);
+        return array_diff(Route::$httpMethods, Route::$exceptMethods);
     }
 
     /**
@@ -171,7 +201,7 @@ class RouteSeeder extends Seeder
      */
     protected function setDefault()
     {
-        foreach (collect(BaseRoute::getRoutes()) as $route) {
+        foreach (collect(Route::getRoutes()) as $route) {
             $uri = $route->uri();
 
             // except
@@ -180,7 +210,7 @@ class RouteSeeder extends Seeder
             }
 
             foreach ($route->methods() as $http_method) {
-                if (!in_array($http_method, self::$exceptMethods)) {
+                if (!in_array($http_method, Route::$exceptMethods)) {
                     array_push($this->routesDefault, [
                         'http_path'   => $uri,
                         'http_method' => $http_method,
@@ -371,6 +401,7 @@ class RouteSeeder extends Seeder
         }
 
         $route['name']       = $route['name'] ?? null;
+        $route['visibility'] = $route['visibility'] ?? $this->visibility(config('admin.default_routes.visibility'));
         $route['created_at'] = Carbon::now();
         $route['updated_at'] = Carbon::now();
 

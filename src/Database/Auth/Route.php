@@ -3,10 +3,38 @@
 namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route as BaseRoute;
 
 class Route extends Model
 {
-    protected $fillable = ['http_path', 'http_method', 'name'];
+    /**
+     * @var array
+     */
+    protected $fillable = ['http_path', 'http_method', 'name', 'visibility'];
+
+    /**
+     * @var array
+     */
+    public static $httpMethods = [
+        'DELETE', 'GET', 'HEAD', 'OPTIONS', 'PATCH', 'POST', 'PUT',
+    ];
+
+    /**
+     * @var array
+     */
+    public static $exceptMethods = [
+        'HEAD', 'OPTIONS',
+    ];
+
+    /**
+     * @var array
+     */
+    protected static $visibility = [
+        'public'    => 'public',
+        'protected' => 'protected',
+        'private'   => 'private',
+    ];
 
     /**
      * Create a new Eloquent model instance.
@@ -74,5 +102,88 @@ class Route extends Model
         static::deleting(function ($model) {
             $model->permissions()->detach();
         });
+    }
+
+    /**
+     * Get visibility is Public.
+     *
+     * @return string
+     */
+    public static function getPublic()
+    {
+        return self::$visibility['public'];
+    }
+
+    /**
+     * Get visibility is protected.
+     *
+     * @return string
+     */
+    public static function getProtected()
+    {
+        return self::$visibility['protected'];
+    }
+
+    /**
+     * Get visibility is private.
+     *
+     * @return string
+     */
+    public static function getPrivate()
+    {
+        return self::$visibility['private'];
+    }
+
+    /**
+     * Is Http Path?
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param $http_path
+     *
+     * @return bool
+     */
+    public static function isHttpPath(Request $request, $http_path): bool
+    {
+        $http_path = preg_replace("/\{(.*?)\}/", '*', $http_path);
+
+        return $request->is($http_path);
+    }
+
+    /**
+     * Get route.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Huztw\Admin\Database\Auth\Route|null
+     */
+    public static function getProtectedRoute(Request $request)
+    {
+        $similar = 0;
+        $result  = null;
+
+        foreach (self::all() as $route) {
+            if (self::isHttpPath($request, $route->http_path)) {
+                if (in_array($request->method(), $route->http_method)) {
+                    similar_text($request->path(), $route->http_path, $newSimilar);
+
+                    if ($newSimilar > $similar) {
+                        $similar = $newSimilar;
+                        $result  = $route;
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Get route.
+     *
+     * @return \Illuminate\Support\Facades\Route
+     */
+    public static function getRoutes()
+    {
+        return BaseRoute::getRoutes();
     }
 }
