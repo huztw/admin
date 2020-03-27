@@ -118,4 +118,30 @@ class Permission extends Model
             $model->routes()->detach();
         });
     }
+
+    /**
+     * Get all permissions of user.
+     *
+     * @param $user
+     *
+     * @return mixed
+     */
+    public static function userPermissions($user)
+    {
+        if (!method_exists($user, 'permissions')) {
+            return collect([]);
+        }
+
+        if (method_exists($user, 'roles')) {
+            $collect = $user->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($user->permissions);
+        } else {
+            $collect = $user->permissions;
+        }
+
+        return $collect->map(function ($item, $key) {
+            $item->routes = self::find($item->id)->routes;
+
+            return $item;
+        });
+    }
 }

@@ -3,6 +3,7 @@
 namespace Huztw\Admin\Middleware;
 
 use Huztw\Admin\Auth\Permission as Checker;
+use Huztw\Admin\Database\Auth\Permission as PermissionDB;
 use Huztw\Admin\Database\Auth\Route;
 use Huztw\Admin\Facades\Admin;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class Permission
             Checker::error(404);
         }
 
-        if (!$this->user::user()->allPermissions()->first(function ($permission) use ($request) {
+        if (!PermissionDB::userPermissions($this->user::user())->first(function ($permission) use ($request) {
             return $permission->shouldPassThrough($request);
         })) {
             Checker::error(403);
@@ -82,13 +83,13 @@ class Permission
         if (empty($user)) {
             $this->user = Admin::class;
         } else {
-            $getuser = config('admin.permission.user.' . $user);
+            $settingUser = config('admin.permission.user.' . $user);
 
-            if (!$getuser) {
+            if (!$settingUser) {
                 throw new \InvalidArgumentException("Invalid permission user class [$user].");
             }
 
-            $this->user = $getuser;
+            $this->user = $settingUser;
         }
     }
 }

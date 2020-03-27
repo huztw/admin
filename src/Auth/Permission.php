@@ -9,6 +9,11 @@ use Huztw\Admin\Middleware\Pjax;
 class Permission
 {
     /**
+     * @var object
+     */
+    protected static $user;
+
+    /**
      * @var array
      */
     protected static $httpStatus = [
@@ -34,15 +39,17 @@ class Permission
             return true;
         }
 
+        $permission = self::getPermission($permission);
+
         if (static::isDisable($permission)) {
             return true;
         }
 
-        if (!Admin::user()) {
+        if (!self::$user::user()) {
             static::error(401);
         }
 
-        if (Admin::user()->cannot($permission)) {
+        if (self::$user::user()->cannot($permission)) {
             static::error(403);
         }
     }
@@ -55,12 +62,11 @@ class Permission
     public static function error($status)
     {
         abort($status, self::httpStatusMessage($status));
-        $response = response(Admin::content()->withError(self::httpStatusMessage($status)));
+        $response = response(self::$user::content()->withError(self::httpStatusMessage($status)));
 
         if (!request()->pjax() && request()->ajax()) {
             abort($status, self::httpStatusMessage($status));
         }
-        abort($status, self::httpStatusMessage($status));
 
         Pjax::respond($response);
     }
@@ -91,5 +97,35 @@ class Permission
     public static function isDisable($permission): bool
     {
         return Checker::where('slug', $permission)->first()->disable;
+    }
+
+    /**
+     * Get Permission.
+     *
+     * @param $permission
+     *
+     * @return string
+     */
+    protected static function getPermission($permission)
+    {
+        $array = explode(':', $permission);
+
+        if (count($array) > 1) {
+            $permission = array_shift($array);
+
+            $user = array_shift($array);
+
+            $settingUser = config('admin.permission.user.' . $user);
+
+            if (!$settingUser) {
+                throw new \InvalidArgumentException("Invalid permission user class [$user].");
+            }
+
+            self::$user = $settingUser;
+        } else {
+            self::$user = Admin::class;
+        }
+
+        return $permission;
     }
 }

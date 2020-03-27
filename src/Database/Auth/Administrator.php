@@ -2,19 +2,16 @@
 
 namespace Huztw\Admin\Database\Auth;
 
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Database\Eloquent\Model;
+use Huztw\Admin\Auth\Authenticatable;
 
 /**
  * Class Administrator.
- *
- * @property Role[] $roles
  */
-class Administrator extends Model implements AuthenticatableContract
+class Administrator extends Authenticatable
 {
-    use Authenticatable;
-
+    /**
+     * @var array
+     */
     protected $fillable = ['username', 'password', 'name'];
 
     /**
@@ -62,21 +59,6 @@ class Administrator extends Model implements AuthenticatableContract
     }
 
     /**
-     * Get all permissions of user.
-     *
-     * @return mixed
-     */
-    public function allPermissions()
-    {
-        return $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($this->permissions)
-            ->map(function ($item, $key) {
-                $item->routes = Permission::find($item->id)->routes;
-
-                return $item;
-            });
-    }
-
-    /**
      * Get avatar attribute.
      *
      * @param string $avatar
@@ -98,101 +80,6 @@ class Administrator extends Model implements AuthenticatableContract
         $default = config('admin.default_avatar') ?: '/vendor/huztw-admin/img/user-160x160.jpg';
 
         return admin_asset($default);
-    }
-
-    /**
-     * Check if user has permission.
-     *
-     * @param $ability
-     * @param array $arguments
-     *
-     * @return bool
-     */
-    public function can($ability, $arguments = []): bool
-    {
-        if (empty($ability)) {
-            return true;
-        }
-
-        if ($this->isAdministrator()) {
-            return true;
-        }
-
-        if ($this->allPermissions()->pluck('slug')->contains($ability)) {
-            return $this->allPermissions()->contains(function ($item, $key) use ($ability) {
-                if ($ability == $item->slug) {
-                    return $item->permission;
-                }
-            });
-        }
-
-        return false;
-    }
-
-    /**
-     * Check if user has no permission.
-     *
-     * @param $permission
-     *
-     * @return bool
-     */
-    public function cannot(string $permission): bool
-    {
-        return !$this->can($permission);
-    }
-
-    /**
-     * Check if user is administrator.
-     *
-     * @return mixed
-     */
-    public function isAdministrator(): bool
-    {
-        $administrator = config('admin.administrator', 'administrator');
-
-        return $this->isRole($administrator);
-    }
-
-    /**
-     * Check if user is $role.
-     *
-     * @param string $role
-     *
-     * @return mixed
-     */
-    public function isRole(string $role): bool
-    {
-        return $this->roles->pluck('slug')->contains($role);
-    }
-
-    /**
-     * Check if user in $roles.
-     *
-     * @param array $roles
-     *
-     * @return mixed
-     */
-    public function inRoles(array $roles = []): bool
-    {
-        return $this->roles->pluck('slug')->intersect($roles)->isNotEmpty();
-    }
-
-    /**
-     * If visible for roles.
-     *
-     * @param $roles
-     *
-     * @return bool
-     */
-    public function visible(array $roles = []): bool
-    {
-        if (empty($roles)) {
-            return true;
-        }
-
-        $roles = array_column($roles, 'slug');
-
-        return $this->inRoles($roles) || $this->isAdministrator();
     }
 
     /**

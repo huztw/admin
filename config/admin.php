@@ -131,6 +131,7 @@ return [
      */
     'permission'                => [
 
+        // Set user authenticatable to use permission
         'user' => [],
     ],
 
@@ -141,8 +142,6 @@ return [
     |
     | Authentication settings for all admin pages. Include an authentication
     | guard and a user provider setting of authentication driver.
-    |
-    | You can specify a controller for `login` `logout` and other auth routes.
     |
      */
     'auth'                      => [
@@ -170,13 +169,6 @@ return [
 
         // Redirect to the specified URI when user is not authorized.
         'redirect_to' => 'login',
-
-        // The URIs that should be excluded from authorization.
-        'excepts'     => [
-            'login',
-            'logout',
-            '_handle_action_',
-        ],
     ],
 
     /*
