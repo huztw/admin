@@ -126,13 +126,11 @@ return [
     | Huztw-admin permission setting
     |--------------------------------------------------------------------------
     |
-    | Permission setting.
+    | Set user authenticatable to use permission.
     |
      */
     'permission'                => [
-
-        // Set user authenticatable to use permission
-        'user' => [],
+        // 'user' => Illuminate\Support\Facades\Auth::class,
     ],
 
     /*
@@ -261,13 +259,6 @@ return [
             'admin/auth/logs*',
         ],
     ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Indicates whether to check route permission.
-    |--------------------------------------------------------------------------
-     */
-    'check_route_permission'    => true,
 
     /*
     |--------------------------------------------------------------------------

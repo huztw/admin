@@ -4,71 +4,94 @@ namespace Huztw\Admin\Auth;
 
 use Huztw\Admin\Database\Auth\Permission as Checker;
 use Huztw\Admin\Facades\Admin;
-use Huztw\Admin\Middleware\Pjax;
 
 class Permission
 {
     /**
      * @var object
      */
-    protected static $user;
+    protected $user;
 
     /**
      * @var array
      */
     protected static $httpStatus = [
-        401 => 'admin.deny',
-        403 => 'admin.deny',
-        423 => 'admin.deny',
+        401 => 'admin.http.status.401',
+        403 => 'admin.http.status.403',
+        404 => 'admin.http.status.404',
+        423 => 'admin.http.status.423',
     ];
+
+    /**
+     * @return void
+     */
+    public function __construct()
+    {
+        admin_error();
+
+        $this->user = Admin::class;
+    }
 
     /**
      * Check permission.
      *
-     * @param $permission
+     * @param string $permission
+     * @param callback $callback
      *
-     * @return true
+     * @return mixed
      */
-    public static function check($permission)
+    public function check($permission, callable $callback = null)
     {
         if (is_array($permission)) {
-            collect($permission)->each(function ($permission) {
-                call_user_func([self::class, 'check'], $permission);
+            $collect = [];
+
+            collect($permission)->each(function ($permission) use ($callback, &$collect) {
+                $check = call_user_func([$this, 'check'], $permission, $callback);
+
+                $collect[$permission] = $check ?? true;
             });
 
+            return empty($collect) ? true : $collect;
+        }
+
+        $permission = $this->getPermission($permission);
+
+        if ($this->isDisable($permission)) {
             return true;
         }
 
-        $permission = self::getPermission($permission);
-
-        if (static::isDisable($permission)) {
-            return true;
+        if (!$this->user::user()) {
+            return $this->error(401, $callback);
         }
 
-        if (!self::$user::user()) {
-            static::error(401);
-        }
-
-        if (self::$user::user()->cannot($permission)) {
-            static::error(403);
+        if ($this->user::user()->cannot($permission)) {
+            return $this->error(403, $callback);
         }
     }
 
     /**
      * Send error response page.
      *
-     * @param $status
+     * @param int $status
+     * @param callback $callback
+     *
+     * @return mixed
      */
-    public static function error($status)
+    public function error($status, callable $callback = null)
     {
-        abort($status, self::httpStatusMessage($status));
-        $response = response(self::$user::content()->withError(self::httpStatusMessage($status)));
+        $error = null;
 
-        if (!request()->pjax() && request()->ajax()) {
-            abort($status, self::httpStatusMessage($status));
+        admin_error($this->httpStatusMessage($status));
+
+        if ($callback instanceof \Closure) {
+            $error = $callback();
         }
 
-        Pjax::respond($response);
+        if (!request()->pjax() && request()->ajax()) {
+            abort($status, $this->httpStatusMessage($status));
+        }
+
+        return $error;
     }
 
     /**
@@ -78,7 +101,7 @@ class Permission
      *
      * @return string|null
      */
-    protected static function httpStatusMessage($status)
+    protected function httpStatusMessage($status)
     {
         if (isset(self::$httpStatus[$status])) {
             return trans(self::$httpStatus[$status]);
@@ -94,7 +117,7 @@ class Permission
      *
      * @return bool
      */
-    public static function isDisable($permission): bool
+    public function isDisable($permission): bool
     {
         return Checker::where('slug', $permission)->first()->disable;
     }
@@ -106,7 +129,7 @@ class Permission
      *
      * @return string
      */
-    protected static function getPermission($permission)
+    protected function getPermission($permission)
     {
         $array = explode(':', $permission);
 
@@ -115,17 +138,27 @@ class Permission
 
             $user = array_shift($array);
 
-            $settingUser = config('admin.permission.user.' . $user);
-
-            if (!$settingUser) {
-                throw new \InvalidArgumentException("Invalid permission user class [$user].");
-            }
-
-            self::$user = $settingUser;
-        } else {
-            self::$user = Admin::class;
+            $this->setUser($user);
         }
 
         return $permission;
+    }
+
+    /**
+     * Set User.
+     *
+     * @param string $user
+     *
+     * @return void
+     */
+    protected function setUser($user)
+    {
+        $settingUser = config('admin.permission.' . $user);
+
+        if (!class_exists($settingUser)) {
+            throw new \InvalidArgumentException("Invalid permission user class [$user].");
+        }
+
+        $this->user = $settingUser;
     }
 }

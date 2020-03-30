@@ -83,6 +83,12 @@ return [
     'http'                  => [
         'method' => 'HTTP method',
         'path'   => 'HTTP path',
+        'status' => [
+            401 => 'Unauthorized',
+            403 => 'Forbidden',
+            404 => 'Not Found',
+            423 => 'Locked',
+        ],
     ],
     'all_methods_if_empty'  => 'All methods if empty',
     'all'                   => 'All',

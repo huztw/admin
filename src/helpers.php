@@ -86,12 +86,16 @@ if (!function_exists('admin_success')) {
     /**
      * Flash a success message bag to session.
      *
-     * @param string $title
+     * @param string|null $title
      * @param string $message
      */
-    function admin_success($title, $message = '')
+    function admin_success($title = null, $message = '')
     {
-        admin_info($title, $message, 'success');
+        if ($title === null) {
+            admin_forget('success');
+        } else {
+            admin_info($title, $message, 'success');
+        }
     }
 }
 
@@ -100,12 +104,16 @@ if (!function_exists('admin_error')) {
     /**
      * Flash a error message bag to session.
      *
-     * @param string $title
+     * @param string|null $title
      * @param string $message
      */
-    function admin_error($title, $message = '')
+    function admin_error($title = null, $message = '')
     {
-        admin_info($title, $message, 'error');
+        if ($title === null) {
+            admin_forget('error');
+        } else {
+            admin_info($title, $message, 'error');
+        }
     }
 }
 
@@ -114,12 +122,16 @@ if (!function_exists('admin_warning')) {
     /**
      * Flash a warning message bag to session.
      *
-     * @param string $title
+     * @param string|null $title
      * @param string $message
      */
-    function admin_warning($title, $message = '')
+    function admin_warning($title = null, $message = '')
     {
-        admin_info($title, $message, 'warning');
+        if ($title === null) {
+            admin_forget('warning');
+        } else {
+            admin_info($title, $message, 'warning');
+        }
     }
 }
 
@@ -137,6 +149,25 @@ if (!function_exists('admin_info')) {
         $message = new MessageBag(get_defined_vars());
 
         session()->flash($type, $message);
+    }
+}
+
+if (!function_exists('admin_forget')) {
+
+    /**
+     * Remove a type of session.
+     *
+     * @param string $title
+     * @param string $message
+     * @param string $type
+     */
+    function admin_forget($type = null)
+    {
+        if ($type === null) {
+            session()->flush();
+        }
+
+        session()->forget($type);
     }
 }
 

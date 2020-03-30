@@ -31,15 +31,17 @@ class RouteSeeder extends Seeder
      */
     public function run()
     {
-        $this->setAdmin();
+        $this->routesUser = $this->getAdmin();
 
         if ($this->notByInstall()) {
-            $this->setDefault();
+            $this->routesDefault = $this->getDefault();
 
-            $this->setUser();
+            $this->routesUser = array_merge($this->routesUser, $this->getUser());
         }
 
-        $this->settings();
+        $routes = array_merge($this->routesDefault, $this->intersectRoutes($this->routesUser, $this->routesDefault));
+
+        $this->settings($routes);
 
         // insert to database.
         Route::insertOrIgnore($this->getRoutes());
@@ -54,20 +56,20 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Set admin's routes by settings file.
+     * Get admin's routes by settings file.
      *
-     * @return void
+     * @return array
      */
-    protected function setAdmin()
+    protected function getAdmin()
     {
-        $this->setUser(__DIR__ . '/../../');
+        $routes = $this->getUser(__DIR__ . '/../../');
 
         $except = [
             'admin/login',
             'admin/logout',
         ];
 
-        $this->routesUser = array_map(function ($route) use ($except) {
+        $routes = array_map(function ($route) use ($except) {
             if (!in_array($route['http_path'], $except)) {
                 $route['visibility'] = $this->visibility('protected');
             } else {
@@ -75,7 +77,9 @@ class RouteSeeder extends Seeder
             }
 
             return $route;
-        }, $this->routesUser);
+        }, $routes);
+
+        return $routes;
     }
 
     /**
@@ -83,14 +87,16 @@ class RouteSeeder extends Seeder
      *
      * @param $directory
      *
-     * @return void
+     * @return array
      */
-    protected function setUser($directory = null)
+    protected function getUser($directory = null)
     {
+        $routes = [];
+
         $settings = require $this->settingsFile($directory);
 
         if (!isset($settings['routes'])) {
-            return;
+            return $routes;
         }
 
         foreach ($settings['routes'] as $http_path => $array) {
@@ -103,13 +109,15 @@ class RouteSeeder extends Seeder
                     continue;
                 }
 
-                array_push($this->routesUser, [
+                array_push($routes, [
                     'http_path'   => $http_path,
                     'http_method' => $http_methods,
                     'name'        => $name,
                 ]);
             }
         }
+
+        return $routes;
     }
 
     /**
@@ -195,12 +203,14 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Set the already exist routes.
+     * Get the already exist routes.
      *
-     * @return void
+     * @return array
      */
-    protected function setDefault()
+    protected function getDefault()
     {
+        $routes = [];
+
         foreach (collect(Route::getRoutes()) as $route) {
             $uri = $route->uri();
 
@@ -211,25 +221,27 @@ class RouteSeeder extends Seeder
 
             foreach ($route->methods() as $http_method) {
                 if (!in_array($http_method, Route::$exceptMethods)) {
-                    array_push($this->routesDefault, [
+                    array_push($routes, [
                         'http_path'   => $uri,
                         'http_method' => $http_method,
                     ]);
                 }
             }
         }
+
+        return $routes;
     }
 
     /**
      * Settings routes.
      *
+     * @param $routes
+     *
      * @return void
      */
-    protected function settings()
+    protected function settings($routes)
     {
-        $this->routes = array_merge($this->routesDefault, $this->compareDefaultRoutes($this->routesUser));
-
-        $this->routes = array_filter(array_map([$this, 'formatRoute'], $this->routes));
+        $this->routes = array_filter(array_map([$this, 'formatRoute'], $routes));
 
         foreach ($this->routes as $route) {
             $searchRoute = $this->searchRoute($this->routes, $route);
@@ -356,23 +368,24 @@ class RouteSeeder extends Seeder
     }
 
     /**
-     * Compare to default routes.
+     * Get intersect routes.
      *
      * @param $routes
+     * @param $compare
      *
      * @return array
      */
-    protected function compareDefaultRoutes($routes)
+    protected function intersectRoutes($routes, $compare)
     {
-        if (count($this->routesDefault) > 0) {
+        if (count($compare) > 0) {
             foreach ($routes as $key => $route) {
-                $searchRoute = $this->searchRoute($this->routesDefault, $route);
+                $searchRoute = $this->searchRoute($compare, $route);
 
                 if ($searchRoute === false) {
                     unset($routes[$key]);
                 } elseif (count($searchRoute['big']) > 0 || count($searchRoute['match']) > 0) {
                     foreach ($route['http_method'] as $method => $http_method) {
-                        if ($this->searchMethod($this->routesDefault, ['http_path' => $route['http_path'], 'http_method' => $http_method]) === false) {
+                        if ($this->searchMethod($compare, ['http_path' => $route['http_path'], 'http_method' => $http_method]) === false) {
                             unset($routes[$key]['http_method'][$method]);
                         }
                     }
