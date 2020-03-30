@@ -12,7 +12,7 @@ return [
      */
     'routes'      => [
         config('admin.route.prefix') . '*'         => [
-            "All admin's permission",
+            'GET,POST' => "All admin's permission",
         ],
         config('admin.route.prefix')               => [
             'GET' => "Admin's Home Page",

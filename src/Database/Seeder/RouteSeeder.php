@@ -15,31 +15,21 @@ class RouteSeeder extends Seeder
     protected $routes = [];
 
     /**
-     * @var array
-     */
-    protected $routesDefault = [];
-
-    /**
-     * @var array
-     */
-    protected $routesUser = [];
-
-    /**
      * Run the database seeds.
      *
      * @return void
      */
     public function run()
     {
-        $this->routesUser = $this->getAdmin();
+        $routes = $this->getAdmin();
 
         if ($this->notByInstall()) {
-            $this->routesDefault = $this->getDefault();
+            $defaultRoutes = $this->getDefault();
 
-            $this->routesUser = array_merge($this->routesUser, $this->getUser());
+            $userRoutes = $this->intersectRoutes(array_merge($routes, $this->getUser()), $defaultRoutes);
+
+            $routes = array_merge($defaultRoutes, $userRoutes);
         }
-
-        $routes = array_merge($this->routesDefault, $this->intersectRoutes($this->routesUser, $this->routesDefault));
 
         $this->settings($routes);
 
