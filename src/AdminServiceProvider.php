@@ -3,6 +3,7 @@
 namespace Huztw\Admin;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 
@@ -72,7 +73,10 @@ class AdminServiceProvider extends ServiceProvider
         $this->ensureHttps();
 
         if (file_exists($routes = admin_path('routes.php'))) {
-            $this->loadRoutesFrom($routes);
+            Route::prefix(config('admin.route.prefix', 'admin'))
+                ->middleware(config('admin.route.middleware', ['web', 'admin']))
+                ->namespace(config('admin.route.namespace', 'App\Admin\Controllers'))
+                ->group($routes);
         }
 
         // Publishing is only necessary when using the CLI.

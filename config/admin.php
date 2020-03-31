@@ -144,7 +144,7 @@ return [
      */
     'auth'                      => [
 
-        'controller'  => App\Admin\Controllers\LoginController::class,
+        'controller'  => 'LoginController',
 
         'guard'       => 'admin',
 

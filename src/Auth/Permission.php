@@ -13,14 +13,9 @@ class Permission
     protected $user;
 
     /**
-     * @var array
+     * @var string
      */
-    protected static $httpStatus = [
-        401 => 'admin.http.status.401',
-        403 => 'admin.http.status.403',
-        404 => 'admin.http.status.404',
-        423 => 'admin.http.status.423',
-    ];
+    protected $user_slug;
 
     /**
      * @return void
@@ -30,13 +25,15 @@ class Permission
         admin_error();
 
         $this->user = Admin::class;
+
+        $this->user_slug = 'admin';
     }
 
     /**
      * Check permission.
      *
      * @param string $permission
-     * @param callback $callback
+     * @param callback|null $callback
      *
      * @return mixed
      */
@@ -72,23 +69,23 @@ class Permission
     /**
      * Send error response page.
      *
-     * @param int $status
-     * @param callback $callback
+     * @param int $code
+     * @param callback|null $callback
      *
      * @return mixed
      */
-    public function error($status, callable $callback = null)
+    public function error($code, callable $callback = null)
     {
         $error = null;
 
-        admin_error($this->httpStatusMessage($status));
+        admin_error($this->httpStatusMessage($code));
 
         if ($callback instanceof \Closure) {
             $error = $callback();
         }
 
         if (!request()->pjax() && request()->ajax()) {
-            abort($status, $this->httpStatusMessage($status));
+            abort($code, $this->httpStatusMessage($code));
         }
 
         return $error;
@@ -97,17 +94,13 @@ class Permission
     /**
      * Http response status message.
      *
-     * @param $status
+     * @param $code
      *
      * @return string|null
      */
-    protected function httpStatusMessage($status)
+    protected function httpStatusMessage($code)
     {
-        if (isset(self::$httpStatus[$status])) {
-            return trans(self::$httpStatus[$status]);
-        }
-
-        return null;
+        return trans("admin.http.status.$code");
     }
 
     /**
@@ -153,6 +146,8 @@ class Permission
      */
     protected function setUser($user)
     {
+        $this->user_slug = $user;
+
         $settingUser = config('admin.permission.' . $user);
 
         if (!class_exists($settingUser)) {

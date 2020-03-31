@@ -2,10 +2,14 @@
 
 namespace Huztw\Admin\Controllers;
 
+use Huztw\Admin\Database\Auth\Administrator;
 use Huztw\Admin\Facades\Admin;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -16,6 +20,11 @@ class AuthController extends Controller
      * @var string
      */
     protected $loginView = 'admin::login';
+
+    /**
+     * @var string
+     */
+    protected $registerView = 'admin::register';
 
     /**
      * Show the application's login form.
@@ -183,9 +192,11 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $sessionKey = $this->guard()->getName();
+
         $this->guard()->logout();
 
-        $request->session()->invalidate();
+        $request->session()->forget($sessionKey);
 
         $request->session()->regenerateToken();
 
@@ -199,6 +210,74 @@ class AuthController extends Controller
      * @return mixed
      */
     protected function loggedOut(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Show the application registration form.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function showRegistrationForm()
+    {
+        return view($this->registerView);
+    }
+
+    /**
+     * Handle a registration request for the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function register(Request $request)
+    {
+        $this->validator($request->all())->validate();
+
+        event(new Registered($user = $this->create($request->all())));
+
+        return $this->registered($request, $user)
+        ?: redirect($this->redirectPath());
+    }
+
+    /**
+     * Get a validator for an incoming registration request.
+     *
+     * @param  array  $data
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    protected function validator(array $data)
+    {
+        return Validator::make($data, [
+            'username' => ['required', 'alpha_dash_unicode', 'max:255', 'unique:admin_users'],
+            'name'     => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string', 'min:3', 'confirmed'],
+        ]);
+    }
+
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\User
+     */
+    protected function create(array $data)
+    {
+        return Administrator::create([
+            'username' => $data['username'],
+            'name'     => $data['name'],
+            'password' => Hash::make($data['password']),
+        ]);
+    }
+
+    /**
+     * The user has been registered.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  mixed  $user
+     * @return mixed
+     */
+    protected function registered(Request $request, $user)
     {
         //
     }

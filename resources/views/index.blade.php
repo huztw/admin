@@ -13,15 +13,15 @@
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
     <!-- Scripts -->
-    <script src="{{ Admin::jQuery() }}"></script>
-    {!! Admin::headerJs() !!}
-
+    <script src="{{ admin_asset("vendor/huztw-admin/jQuery/jquery-3.4.1.min.js")}} "></script>
+    <script src="{{ admin_asset('vendor/huztw-admin/js/admin.js') }}" defer></script>
+  
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
-
+  
     <!-- Styles -->
-    {!! Admin::css() !!}
+    <link href="{{ admin_asset('vendor/huztw-admin/css/admin.css') }}" rel="stylesheet">
 
 </head>
 
@@ -51,12 +51,6 @@
 </div>
 
 <button id="totop" title="Go to top" style="display: none;"><i class="fa fa-chevron-up"></i></button>
-
-<script>
-    function LA() {}
-    LA.token = "{{ csrf_token() }}";
-    LA.user = @json($_user_);
-</script>
 
 <!-- REQUIRED JS SCRIPTS -->
 {!! Admin::js() !!}

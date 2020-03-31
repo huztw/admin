@@ -6,6 +6,9 @@ use Huztw\Admin\Auth\Permission as Checker;
 use Huztw\Admin\Database\Auth\Permission as PermissionDB;
 use Huztw\Admin\Database\Auth\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Permission extends Checker
 {
@@ -31,7 +34,7 @@ class Permission extends Checker
         $visibility = $this->getRouteVisibility($request);
 
         if (Route::getPrivate() == $visibility) {
-            $this->error_exit(423);
+            return $this->error_exit(423);
         }
 
         if (Route::getPublic() == $visibility) {
@@ -43,13 +46,13 @@ class Permission extends Checker
         }
 
         if (!$this->user::user()) {
-            $this->error_exit(404);
+            return $this->error_exit(404);
         }
 
         if (!PermissionDB::userPermissions($this->user::user())->first(function ($permission) use ($request) {
             return $permission->shouldPassThrough($request);
         })) {
-            $this->error_exit(403);
+            return $this->error_exit(403);
         }
 
         return $next($request);
@@ -72,16 +75,34 @@ class Permission extends Checker
     }
 
     /**
-     * Send error response and abort.
+     * Throw an HttpException with the given data.
      *
-     * @param int $status
+     * @param int $code
      *
-     * @return void
+     * @return mixed
      */
-    protected function error_exit($status)
+    protected function error_exit($code)
     {
-        $this->error($status, function () use ($status) {
-            abort($status, $this->httpStatusMessage($status));
+        return $this->error($code, function () use ($code) {
+            if (!request()->ajax()) {
+                if (404 == $code) {
+                    $exception = new NotFoundHttpException($this->httpStatusMessage($code));
+                } else {
+                    $exception = new HttpException($code, $this->httpStatusMessage($code));
+                }
+
+                if ($this->user_slug == 'admin') {
+                    $view = 'admin::errors.' . $code;
+                } else {
+                    $view = 'errors.' . $this->user_slug . '.' . $code;
+                }
+
+                if (View::exists($view)) {
+                    return response()->view($view, ['exception' => $exception], $code);
+                }
+
+                abort($code, $this->httpStatusMessage($code));
+            }
         });
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Huztw\Admin\Traits;
 
-use Huztw\Admin\Controllers\AuthController;
+use Illuminate\Support\Facades\Route;
 
 trait Routes
 {
@@ -13,21 +13,13 @@ trait Routes
      */
     public function routes()
     {
-        $attributes = [
-            'prefix'     => config('admin.route.prefix'),
-            'middleware' => config('admin.route.middleware'),
-        ];
+        $authController = config('admin.auth.controller', 'LoginController');
 
-        app('router')->group($attributes, function ($router) {
-            $authController = config('admin.auth.controller', AuthController::class);
-
-            /* @var \Illuminate\Routing\Router $router */
-            $router->get('login', $authController . '@showLoginForm')->name('admin.login');
-            $router->post('login', $authController . '@login');
-            $router->get('logout', $authController . '@logout')->name('admin.logout');
-            $router->post('logout', $authController . '@logout');
-            $router->get('register', $authController . '@showRegistrationForm')->name('admin.register');
-            $router->post('register', $authController . '@register');
-        });
+        Route::get('login', $authController . '@showLoginForm')->name('admin.login');
+        Route::post('login', $authController . '@login');
+        Route::get('logout', $authController . '@logout')->name('admin.logout');
+        Route::post('logout', $authController . '@logout');
+        Route::get('register', $authController . '@showRegistrationForm')->name('admin.register');
+        Route::post('register', $authController . '@register');
     }
 }
