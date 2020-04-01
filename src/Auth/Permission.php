@@ -18,15 +18,100 @@ class Permission
     protected $user_slug;
 
     /**
+     * @var array
+     */
+    protected $items;
+
+    /**
+     * @var string
+     */
+    protected $items_slug;
+
+    /**
      * @return void
      */
-    public function __construct()
+    public function __construct($items = [], $items_slug = '', $user = 'admin')
     {
+        $this->items = $items;
+
+        $this->items_slug = $items_slug;
+
         admin_error();
 
-        $this->user = Admin::class;
+        $this->user($user);
+    }
 
-        $this->user_slug = 'admin';
+    /**
+     * Used by Collection.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function get()
+    {
+        return collect($this->items);
+    }
+
+    /**
+     * Get user's permission.
+     *
+     * @return mixed
+     */
+    public function permission()
+    {
+        $items = [];
+
+        if ($this->user::user()) {
+            $items = $this->user::user()->allPermissions()->all();
+        }
+
+        return new static($items, 'permission', $this->user_slug);
+    }
+
+    /**
+     * Get user's route.
+     *
+     * @return mixed
+     */
+    public function route()
+    {
+        $items = [];
+
+        if ($this->user::user()) {
+            $items = $this->user::user()->allRoutes()->all();
+        }
+
+        return new static($items, 'route', $this->user_slug);
+    }
+
+    /**
+     * Get user's action.
+     *
+     * @return mixed
+     */
+    public function action()
+    {
+        $items = [];
+
+        if ($this->user::user()) {
+            $items = $this->user::user()->allActions()->all();
+        }
+
+        return new static($items, 'action', $this->user_slug);
+    }
+
+    /**
+     * Check.
+     *
+     * @param string $check
+     * @param callback|null $callback
+     *
+     * @return mixed
+     */
+    public function check($check, callable $callback = null)
+    {
+        $method = "check" . ucfirst($this->items_slug);
+
+        return $this->$method($check, $callback);
     }
 
     /**
@@ -37,7 +122,7 @@ class Permission
      *
      * @return mixed
      */
-    public function check($permission, callable $callback = null)
+    protected function checkPermission($permission, callable $callback = null)
     {
         if (is_array($permission)) {
             $collect = [];
@@ -50,8 +135,6 @@ class Permission
 
             return empty($collect) ? true : $collect;
         }
-
-        $permission = $this->getPermission($permission);
 
         if ($this->isDisable($permission)) {
             return true;
@@ -131,7 +214,7 @@ class Permission
 
             $user = array_shift($array);
 
-            $this->setUser($user);
+            $this->user($user);
         }
 
         return $permission;
@@ -142,18 +225,26 @@ class Permission
      *
      * @param string $user
      *
-     * @return void
+     * @return \Huztw\Admin\Auth\Permission
      */
-    protected function setUser($user)
+    public function user($user = 'admin')
     {
         $this->user_slug = $user;
 
-        $settingUser = config('admin.permission.' . $user);
+        if ('admin' == $user) {
+            $this->user = Admin::class;
 
-        if (!class_exists($settingUser)) {
+            return $this;
+        }
+
+        $setting = config('admin.permission.' . $user);
+
+        if (!class_exists($setting)) {
             throw new \InvalidArgumentException("Invalid permission user class [$user].");
         }
 
-        $this->user = $settingUser;
+        $this->user = $setting;
+
+        return $this;
     }
 }

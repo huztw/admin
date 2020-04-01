@@ -10,7 +10,7 @@ class Permission extends Model
     /**
      * @var array
      */
-    protected $fillable = ['name', 'slug', 'http_method', 'http_path'];
+    protected $fillable = ['name', 'slug', 'permission', 'disable'];
 
     /**
      * Create a new Eloquent model instance.
@@ -23,9 +23,19 @@ class Permission extends Model
 
         $this->setConnection($connection);
 
-        $this->setTable(config('admin.database.permissions_table'));
+        $this->setTable(self::table());
 
         parent::__construct($attributes);
+    }
+
+    /**
+     * Database table of Permissions.
+     *
+     * @return string
+     */
+    public static function table()
+    {
+        return config('admin.database.permissions_table');
     }
 
     /**
@@ -57,6 +67,20 @@ class Permission extends Model
     }
 
     /**
+     * Permission belongs to many actions.
+     *
+     * @return BelongsToMany
+     */
+    public function actions()
+    {
+        $pivotTable = config('admin.database.permission_actions_table');
+
+        $relatedModel = config('admin.database.actions_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'permission_id', 'action_id')->withTimestamps();
+    }
+
+    /**
      * @param $method
      */
     public function setHttpMethodAttribute($method)
@@ -78,6 +102,26 @@ class Permission extends Model
         }
 
         return $method;
+    }
+
+    /**
+     * @param $get
+     *
+     * @return bool
+     */
+    public function getPermissionAttribute($get)
+    {
+        return boolval($get);
+    }
+
+    /**
+     * @param $get
+     *
+     * @return bool
+     */
+    public function getDisableAttribute($get)
+    {
+        return boolval($get);
     }
 
     /**
@@ -116,6 +160,7 @@ class Permission extends Model
         static::deleting(function ($model) {
             $model->roles()->detach();
             $model->routes()->detach();
+            $model->actions()->detach();
         });
     }
 

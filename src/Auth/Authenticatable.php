@@ -82,10 +82,39 @@ abstract class Authenticatable extends User
         }
 
         return $permissions->map(function ($item, $key) {
-            $item->routes = Permission::find($item->id)->routes;
+            $item->routes  = $item->routes;
+            $item->actions = $item->actions;
 
             return $item;
         });
+    }
+
+    /**
+     * Get all routes of user.
+     *
+     * @return mixed
+     */
+    public function allRoutes()
+    {
+        $permissions = $this->allPermissions();
+
+        return $permissions->map(function ($item, $key) {
+            return $item->routes;
+        })->collapse();
+    }
+
+    /**
+     * Get all actions of user.
+     *
+     * @return mixed
+     */
+    public function allActions()
+    {
+        $permissions = $this->allPermissions();
+
+        return $permissions->map(function ($item, $key) {
+            return $item->actions;
+        })->collapse();
     }
 
     /**

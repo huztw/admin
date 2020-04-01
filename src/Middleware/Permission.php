@@ -42,7 +42,7 @@ class Permission extends Checker
         }
 
         if ($user !== null) {
-            $this->setUser($user);
+            $this->user($user);
         }
 
         if (!$this->user::user()) {

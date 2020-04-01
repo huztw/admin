@@ -2,6 +2,7 @@
 
 namespace Huztw\Admin\Console;
 
+use Huztw\Admin\Database\Seeder\ActionSeeder;
 use Huztw\Admin\Database\Seeder\PermissionSeeder;
 use Huztw\Admin\Database\Seeder\RouteSeeder;
 
@@ -33,6 +34,8 @@ class PushCommand extends Command
         $this->call('db:seed', ['--class' => RouteSeeder::class]);
 
         $this->call('db:seed', ['--class' => PermissionSeeder::class]);
+
+        $this->call('db:seed', ['--class' => ActionSeeder::class]);
 
         $this->line('<info>Pushing complete</info>');
     }
