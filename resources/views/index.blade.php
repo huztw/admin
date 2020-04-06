@@ -58,13 +58,13 @@
 </body>
 </html>
 @if($error = admin_messages('error'))
-{!! $error->first('title') !!}
+{!! $error->first('message') !!}
 @elseif ($errors = admin_messages('errors'))
     @if ($errors->hasBag('error'))
-    {!! $error->first('title') !!}
+    {!! $error->first('message') !!}
     @endif
 @endif
 
 @if($success = admin_messages('success'))
-{!! $success->first('title') !!}
+{!! $success->first('message') !!}
 @endif

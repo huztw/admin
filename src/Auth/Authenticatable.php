@@ -123,7 +123,7 @@ abstract class Authenticatable extends User
      * @param  string  $ability
      * @param  array|mixed  $arguments
      *
-     * @return bool
+     * @return true|null
      */
     public function can($ability, $arguments = [])
     {
@@ -135,11 +135,17 @@ abstract class Authenticatable extends User
             return true;
         }
 
-        if ($this->allPermissions()->pluck('slug')->contains($ability)) {
-            return $this->allPermissions()->contains(function ($item, $key) use ($ability) {
-                if ($ability == $item->slug) {
-                    return $item->permission;
-                }
+        if ('permission' == $ability) {
+            return $this->allPermissions()->first(function ($item) use ($arguments) {
+                return $arguments == $item->slug;
+            });
+        } elseif ('route' == $ability) {
+            return $this->allRoutes()->first(function ($item) use ($arguments) {
+                return $item->shouldPassThrough($arguments);
+            });
+        } elseif ('action' == $ability) {
+            return $this->allActions()->first(function ($item) use ($arguments) {
+                return $arguments == $item->slug;
             });
         }
 

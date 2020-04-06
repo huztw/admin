@@ -68,5 +68,7 @@ class UninstallCommand extends Command
                 $this->deleteFile(resource_path("lang/$langfile"));
             }
         }
+
+        $this->deleteDir(resource_path('views/errors/admin'));
     }
 }

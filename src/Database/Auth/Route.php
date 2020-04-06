@@ -150,6 +150,30 @@ class Route extends Model
     }
 
     /**
+     * Determine if the route should pass through.
+     *
+     * @param Request $request
+     *
+     * @return true|null
+     */
+    public function shouldPassThrough(Request $request)
+    {
+        return static::get()->first(function ($route) use ($request) {
+            if ($route::isHttpPath($request, $route->http_path)) {
+                if (empty($route->http_method)) {
+                    return true;
+                }
+
+                foreach ($route->http_method as $http_method) {
+                    if ($request->isMethod($http_method)) {
+                        return true;
+                    }
+                }
+            }
+        });
+    }
+
+    /**
      * Get route.
      *
      * @param \Illuminate\Http\Request $request

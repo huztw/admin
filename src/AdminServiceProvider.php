@@ -177,6 +177,11 @@ class AdminServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/lang' => resource_path('lang'),
         ], 'admin-lang');
 
+        // Publishing the views files.
+        $this->publishes([
+            __DIR__ . '/../resources/views/errors' => resource_path('views/errors/admin'),
+        ], 'admin-views');
+
         // Registering package commands.
         $this->commands(self::$commands);
     }

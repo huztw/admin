@@ -88,7 +88,7 @@ return [
             403 => 'Forbidden',
             404 => 'Not Found',
             419 => 'Page Expired',
-            423 => 'Locked',
+            423 => 'Not Found',
             429 => 'Too Many Requests',
             500 => 'Server Error',
             503 => 'Service Unavailable',

@@ -3,7 +3,6 @@
 namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 
 class Permission extends Model
 {
@@ -125,30 +124,6 @@ class Permission extends Model
     }
 
     /**
-     * If request should pass through the current permission.
-     *
-     * @param Request $request
-     *
-     * @return true|null
-     */
-    public function shouldPassThrough(Request $request)
-    {
-        return $this->routes->first(function ($route) use ($request) {
-            if ($route::isHttpPath($request, $route->http_path)) {
-                if (empty($route->http_method)) {
-                    return true;
-                }
-
-                foreach ($route->http_method as $http_method) {
-                    if ($request->isMethod($http_method)) {
-                        return true;
-                    }
-                }
-            }
-        });
-    }
-
-    /**
      * Detach models from the relationship.
      *
      * @return void
@@ -161,32 +136,6 @@ class Permission extends Model
             $model->roles()->detach();
             $model->routes()->detach();
             $model->actions()->detach();
-        });
-    }
-
-    /**
-     * Get all permissions of user.
-     *
-     * @param $user
-     *
-     * @return mixed
-     */
-    public static function userPermissions($user)
-    {
-        if (!method_exists($user, 'permissions')) {
-            return collect([]);
-        }
-
-        if (method_exists($user, 'roles')) {
-            $collect = $user->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($user->permissions);
-        } else {
-            $collect = $user->permissions;
-        }
-
-        return $collect->map(function ($item, $key) {
-            $item->routes = self::find($item->id)->routes;
-
-            return $item;
         });
     }
 }

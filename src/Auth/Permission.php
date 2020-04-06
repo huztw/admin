@@ -2,8 +2,11 @@
 
 namespace Huztw\Admin\Auth;
 
-use Huztw\Admin\Database\Auth\Permission as Checker;
-use Huztw\Admin\Facades\Admin;
+use Closure;
+use Huztw\Admin\Database\Auth\Action;
+use Huztw\Admin\Database\Auth\Permission as PermissionDB;
+use Huztw\Admin\Database\Auth\Route;
+use Illuminate\Http\Request;
 
 class Permission
 {
@@ -20,7 +23,7 @@ class Permission
     /**
      * @var array
      */
-    protected $items;
+    protected $items = [];
 
     /**
      * @var string
@@ -28,17 +31,17 @@ class Permission
     protected $items_slug;
 
     /**
-     * @return void
+     * Permission constructor.
+     *
+     * @param Closure|null $callback
      */
-    public function __construct($items = [], $items_slug = '', $user = 'admin')
+    public function __construct(Closure $callback = null)
     {
-        $this->items = $items;
-
-        $this->items_slug = $items_slug;
+        if ($callback instanceof Closure) {
+            $callback($this);
+        }
 
         admin_error();
-
-        $this->user($user);
     }
 
     /**
@@ -52,126 +55,239 @@ class Permission
     }
 
     /**
-     * Get user's permission.
+     * Get user's permissions.
      *
-     * @return mixed
+     * @return \Huztw\Admin\Auth\Permission
      */
     public function permission()
     {
-        $items = [];
+        $this->items_slug = 'permission';
 
-        if ($this->user::user()) {
-            $items = $this->user::user()->allPermissions()->all();
+        if (!$this->user) {
+            $this->user();
         }
 
-        return new static($items, 'permission', $this->user_slug);
+        if ($this->user::user()) {
+            $this->items = $this->user::user()->allPermissions()->all();
+        }
+
+        return $this;
     }
 
     /**
-     * Get user's route.
+     * Get user's routes.
      *
-     * @return mixed
+     * @return \Huztw\Admin\Auth\Permission
      */
     public function route()
     {
-        $items = [];
+        $this->items_slug = 'route';
 
-        if ($this->user::user()) {
-            $items = $this->user::user()->allRoutes()->all();
+        if (!$this->user) {
+            $this->user();
         }
 
-        return new static($items, 'route', $this->user_slug);
+        if ($this->user::user()) {
+            $this->items = $this->user::user()->allRoutes()->all();
+        }
+
+        return $this;
     }
 
     /**
-     * Get user's action.
+     * Get user's actions.
      *
-     * @return mixed
+     * @return \Huztw\Admin\Auth\Permission
      */
     public function action()
     {
-        $items = [];
+        $this->items_slug = 'action';
 
-        if ($this->user::user()) {
-            $items = $this->user::user()->allActions()->all();
+        if (!$this->user) {
+            $this->user();
         }
 
-        return new static($items, 'action', $this->user_slug);
+        if ($this->user::user()) {
+            $this->items = $this->user::user()->allActions()->all();
+        }
+
+        return $this;
     }
 
     /**
      * Check.
      *
-     * @param string $check
+     * @param string|array|null $args
      * @param callback|null $callback
      *
      * @return mixed
      */
-    public function check($check, callable $callback = null)
+    public function check($args = null, callable $callback = null)
     {
-        $method = "check" . ucfirst($this->items_slug);
+        if ($this->items_slug === null) {
+            throw new \InvalidArgumentException("Invalid check with [$this->items_slug].");
+        }
 
-        return $this->$method($check, $callback);
+        $method = "shouldPassThrough" . ucfirst($this->items_slug);
+
+        if (!method_exists($this, $method)) {
+            throw new \InvalidArgumentException("The [$this->items_slug] check method does not exist.");
+        }
+
+        $args = is_array($args) ? $args : [$args];
+
+        $check = true;
+
+        collect($args)->each(function ($arg) use ($method, &$check) {
+            if (!call_user_func([$this, $method], $arg)) {
+                $check = false;
+            }
+        });
+
+        if (!$check) {
+            if ($callback instanceof Closure) {
+                return $callback();
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
-     * Check permission.
+     * Determine if the user has a permission that should pass through.
      *
      * @param string $permission
-     * @param callback|null $callback
      *
-     * @return mixed
+     * @return bool
      */
-    protected function checkPermission($permission, callable $callback = null)
+    protected function shouldPassThroughPermission($permission): bool
     {
-        if (is_array($permission)) {
-            $collect = [];
-
-            collect($permission)->each(function ($permission) use ($callback, &$collect) {
-                $check = call_user_func([$this, 'check'], $permission, $callback);
-
-                $collect[$permission] = $check ?? true;
-            });
-
-            return empty($collect) ? true : $collect;
+        if (empty($permission)) {
+            return true;
         }
 
-        if ($this->isDisable($permission)) {
+        // Determine if permission is disable.
+        if (PermissionDB::where('slug', $permission)->get()->first(function ($permission) {return $permission->disable ?? false;})) {
             return true;
         }
 
         if (!$this->user::user()) {
-            return $this->error(401, $callback);
+            $this->error(401);
+            return false;
         }
 
-        if ($this->user::user()->cannot($permission)) {
-            return $this->error(403, $callback);
+        if ($this->user::user()->cannot($this->items_slug, $permission)) {
+            $this->error(403);
+            return false;
         }
+
+        return true;
+    }
+
+    /**
+     * Determine if the user has a route that should pass through.
+     *
+     * @param string $permission
+     *
+     * @return bool
+     */
+    protected function shouldPassThroughRoute($request): bool
+    {
+        if (empty($request)) {
+            return true;
+        }
+
+        if (!$request instanceof Request) {
+            throw new \InvalidArgumentException('The parameter should be instance of \Illuminate\Http\Request.');
+        }
+
+        // Get route's visibility.
+        if (Route::getProtectedRoute($request)) {
+            $visibility = Route::getProtectedRoute($request)->visibility;
+        } else {
+            $visibility = Route::getPublic();
+        }
+
+        if (Route::getPublic() == $visibility) {
+            return true;
+        }
+
+        if (Route::getPrivate() == $visibility) {
+            $this->error(423);
+            return false;
+        }
+
+        if (!$this->user::user()) {
+            $this->error(404);
+            return false;
+        }
+
+        if ($this->user::user()->cannot($this->items_slug, $request)) {
+            $this->error(403);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determine if the user has a action that should pass through.
+     *
+     * @param string $action
+     *
+     * @return bool
+     */
+    protected function shouldPassThroughAction($action): bool
+    {
+        if (empty($action)) {
+            return true;
+        }
+
+        // Get action's visibility.
+        if (($item = Action::where('slug', $action)->get()->first()) === null) {
+            $visibility = Action::getPublic();
+        } else {
+            $visibility = $item->visibility;
+        }
+
+        if (Action::getPublic() == $visibility) {
+            return true;
+        }
+
+        if (Action::getPrivate() == $visibility) {
+            $this->error(423);
+            return false;
+        }
+
+        if (!$this->user::user()) {
+            $this->error(404);
+            return false;
+        }
+
+        if ($this->user::user()->cannot($this->items_slug, $action)) {
+            $this->error(403);
+            return false;
+        }
+
+        return true;
     }
 
     /**
      * Send error response page.
      *
      * @param int $code
-     * @param callback|null $callback
      *
-     * @return mixed
+     * @return void
      */
-    public function error($code, callable $callback = null)
+    public function error($code)
     {
-        $error = null;
-
-        admin_error($this->httpStatusMessage($code));
-
-        if ($callback instanceof \Closure) {
-            $error = $callback();
-        }
+        admin_error($code, $this->httpStatusMessage($code));
 
         if (!request()->pjax() && request()->ajax()) {
             abort($code, $this->httpStatusMessage($code));
         }
-
-        return $error;
     }
 
     /**
@@ -187,60 +303,20 @@ class Permission
     }
 
     /**
-     * If permission is disable.
-     *
-     * @param $permission
-     *
-     * @return bool
-     */
-    public function isDisable($permission): bool
-    {
-        return Checker::where('slug', $permission)->first()->disable;
-    }
-
-    /**
-     * Get Permission.
-     *
-     * @param $permission
-     *
-     * @return string
-     */
-    protected function getPermission($permission)
-    {
-        $array = explode(':', $permission);
-
-        if (count($array) > 1) {
-            $permission = array_shift($array);
-
-            $user = array_shift($array);
-
-            $this->user($user);
-        }
-
-        return $permission;
-    }
-
-    /**
      * Set User.
      *
      * @param string $user
      *
      * @return \Huztw\Admin\Auth\Permission
      */
-    public function user($user = 'admin')
+    public function user($user = null)
     {
-        $this->user_slug = $user;
+        $this->user_slug = $user ?? 'admin';
 
-        if ('admin' == $user) {
-            $this->user = Admin::class;
-
-            return $this;
-        }
-
-        $setting = config('admin.permission.' . $user);
+        $setting = config('admin.permission.' . $this->user_slug);
 
         if (!class_exists($setting)) {
-            throw new \InvalidArgumentException("Invalid permission user class [$user].");
+            throw new \InvalidArgumentException("Invalid permission user class [$this->user_slug].");
         }
 
         $this->user = $setting;

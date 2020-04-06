@@ -130,7 +130,8 @@ return [
     |
      */
     'permission'                => [
-        // 'user' => Illuminate\Support\Facades\Auth::class,
+        'admin' => Huztw\Admin\Facades\Admin::class,
+        // 'user'  => Illuminate\Support\Facades\Auth::class,
     ],
 
     /*
