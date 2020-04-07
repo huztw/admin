@@ -88,27 +88,35 @@ class Action extends Model
     }
 
     /**
-     * Determine action can pass.
+     * Determine if the action can pass through.
+     *
+     * @param string|null $slug
      *
      * @return bool
      */
-    public function can(): bool
+    public function can($slug = null): bool
     {
-        if (self::getPrivate() == $this->visibility) {
-            return false;
+        if (empty($slug)) {
+            return true;
         }
 
-        return true;
+        if ($slug == $this->slug) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Determine action can not pass.
+     * Determine if the action can not pass.
+     *
+     * @param string|null $slug
      *
      * @return bool
      */
-    public function cannot(): bool
+    public function cannot($slug = null): bool
     {
-        return !$this->can();
+        return !$this->can($slug);
     }
 
     /**

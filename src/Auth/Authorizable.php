@@ -2,13 +2,12 @@
 
 namespace Huztw\Admin\Auth;
 
-use Huztw\Admin\Database\Auth\Permission;
 use Illuminate\Foundation\Auth\User;
 
 /**
- * Abstract Class Authenticatable.
+ * Abstract Class Authorizable.
  */
-abstract class Authenticatable extends User
+abstract class Authorizable extends User
 {
     /**
      * Determine if the roles method exists.
@@ -67,9 +66,11 @@ abstract class Authenticatable extends User
     /**
      * Get all permissions of user.
      *
+     * @param  bool  $force
+     *
      * @return mixed
      */
-    public function allPermissions()
+    public function allPermissions($force = false)
     {
         if (!$this->permissionsExists()) {
             return collect([]);
@@ -79,6 +80,13 @@ abstract class Authenticatable extends User
             $permissions = $this->roles()->with('permissions')->get()->pluck('permissions')->flatten()->merge($this->permissions);
         } else {
             $permissions = $this->permissions;
+        }
+
+        if (!$force) {
+            // Filter the permission which has disable
+            $permissions = $permissions->filter(function ($item, $key) {
+                return !$item->disable;
+            });
         }
 
         return $permissions->map(function ($item, $key) {
@@ -92,11 +100,13 @@ abstract class Authenticatable extends User
     /**
      * Get all routes of user.
      *
+     * @param  bool  $filter
+     *
      * @return mixed
      */
-    public function allRoutes()
+    public function allRoutes($force = false)
     {
-        $permissions = $this->allPermissions();
+        $permissions = $this->allPermissions($force);
 
         return $permissions->map(function ($item, $key) {
             return $item->routes;
@@ -106,11 +116,13 @@ abstract class Authenticatable extends User
     /**
      * Get all actions of user.
      *
+     * @param  bool  $filter
+     *
      * @return mixed
      */
-    public function allActions()
+    public function allActions($force = false)
     {
-        $permissions = $this->allPermissions();
+        $permissions = $this->allPermissions($force);
 
         return $permissions->map(function ($item, $key) {
             return $item->actions;
@@ -136,16 +148,16 @@ abstract class Authenticatable extends User
         }
 
         if ('permission' == $ability) {
-            return $this->allPermissions()->first(function ($item) use ($arguments) {
-                return $arguments == $item->slug;
+            return $this->allPermissions()->first(function ($permission) use ($arguments) {
+                return $permission->can($arguments);
             });
         } elseif ('route' == $ability) {
-            return $this->allRoutes()->first(function ($item) use ($arguments) {
-                return $item->shouldPassThrough($arguments);
+            return $this->allRoutes()->first(function ($route) use ($arguments) {
+                return $route->can($arguments);
             });
         } elseif ('action' == $ability) {
-            return $this->allActions()->first(function ($item) use ($arguments) {
-                return $arguments == $item->slug;
+            return $this->allActions()->first(function ($action) use ($arguments) {
+                return $action->can($arguments);
             });
         }
 

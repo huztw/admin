@@ -18,7 +18,7 @@
                 <!-- Authentication Links -->
                 @if (!Admin::guard()->check())
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ admin_url('login') }}">{{ __('Login') }}</a>
+                        <a class="nav-link" href="{{ admin_url('login') }}">{{ trans('admin.login') }}</a>
                     </li>
                 @else
                     <li class="nav-item dropdown">
@@ -40,9 +40,11 @@
                     </li>
                 @endguest
                 @if (Route::has('admin.register'))
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ admin_url('register') }}">{{ __('Register') }}</a>
-                    </li>
+                    @if(admin_permission()->route()->check('admin/register'))
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ admin_url('register') }}">{{ trans('admin.register') }}</a>
+                        </li>
+                    @endif
                 @endif
             </ul>
         </div>

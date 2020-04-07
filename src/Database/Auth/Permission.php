@@ -124,6 +124,38 @@ class Permission extends Model
     }
 
     /**
+     * Determine if the permission can pass through.
+     *
+     * @param string|null $slug
+     *
+     * @return bool
+     */
+    public function can($slug = null): bool
+    {
+        if (empty($slug)) {
+            return true;
+        }
+
+        if ($slug == $this->slug) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if the permission can not pass.
+     *
+     * @param string|null $slug
+     *
+     * @return bool
+     */
+    public function cannot($slug = null): bool
+    {
+        return !$this->can($slug);
+    }
+
+    /**
      * Detach models from the relationship.
      *
      * @return void

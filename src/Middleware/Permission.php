@@ -29,11 +29,11 @@ class Permission extends Checker
      */
     public function handle(Request $request, \Closure $next, $user = null)
     {
-        $check = $this->user($user)->route()->check($request, function () {
+        $check = $this->user($user)->route()->check($request->path(), function () {
             return $this->error_exit(admin_messages('error')->first('title'));
         });
 
-        if (admin_messages('error')) {
+        if ($check !== true) {
             return $check;
         }
 

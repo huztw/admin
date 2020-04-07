@@ -2,12 +2,12 @@
 
 namespace Huztw\Admin\Database\Auth;
 
-use Huztw\Admin\Auth\Authenticatable;
+use Huztw\Admin\Auth\Authorizable;
 
 /**
  * Class Administrator.
  */
-class Administrator extends Authenticatable
+class Administrator extends Authorizable
 {
     /**
      * @var array

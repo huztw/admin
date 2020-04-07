@@ -57,14 +57,3 @@
 
 </body>
 </html>
-@if($error = admin_messages('error'))
-{!! $error->first('message') !!}
-@elseif ($errors = admin_messages('errors'))
-    @if ($errors->hasBag('error'))
-    {!! $error->first('message') !!}
-    @endif
-@endif
-
-@if($success = admin_messages('success'))
-{!! $success->first('message') !!}
-@endif

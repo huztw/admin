@@ -5,6 +5,7 @@ namespace Huztw\Admin\Database\Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route as BaseRoute;
+use Illuminate\Support\Str;
 
 class Route extends Model
 {
@@ -135,70 +136,83 @@ class Route extends Model
     }
 
     /**
-     * Is Http Path?
+     * Determine if the route is match with pattern.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param $http_path
+     * @param string $pattern
+     * @param string $route
      *
      * @return bool
      */
-    public static function isHttpPath(Request $request, $http_path): bool
+    public static function isMatch($pattern, $route): bool
     {
-        $http_path = preg_replace("/\{(.*?)\}/", '*', $http_path);
+        if (Str::is($pattern, rawurldecode($route))) {
+            return true;
+        }
 
-        return $request->is($http_path);
+        return false;
     }
 
     /**
-     * Determine if the route should pass through.
+     * Determine if the route can pass through.
      *
-     * @param Request $request
+     * @param \Illuminate\Http\Request|null $request
      *
-     * @return true|null
+     * @return bool
      */
-    public function shouldPassThrough(Request $request)
+    public function can(string $route): bool
     {
-        return static::get()->first(function ($route) use ($request) {
-            if ($route::isHttpPath($request, $route->http_path)) {
-                if (empty($route->http_method)) {
-                    return true;
-                }
+        if (empty($route)) {
+            return true;
+        }
 
-                foreach ($route->http_method as $http_method) {
-                    if ($request->isMethod($http_method)) {
-                        return true;
-                    }
-                }
-            }
-        });
+        if (self::isMatch($this->http_path, $route)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * Get route.
+     * Determine if the route can not pass.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request|null $request
+     *
+     * @return bool
+     */
+    public function cannot(Request $request = null): bool
+    {
+        return !$this->can($request);
+    }
+
+    /**
+     * Get the match and have high similarity route.
+     *
+     * @param \Illuminate\Http\Request|null $request
      *
      * @return \Huztw\Admin\Database\Auth\Route|null
      */
-    public static function getProtectedRoute(Request $request)
+    public static function similarRoute(Request $request = null)
     {
-        $similar = 0;
-        $result  = null;
+        if (!$request) {
+            $request = request();
+        }
 
-        foreach (self::all() as $route) {
-            if (self::isHttpPath($request, $route->http_path)) {
-                if (in_array($request->method(), $route->http_method)) {
-                    similar_text($request->path(), $route->http_path, $newSimilar);
+        $similar = 0;
+
+        foreach (self::all() as $item) {
+            if (self::isMatch($request->path(), $item->http_path)) {
+                if (in_array($request->method(), $item->http_method)) {
+                    similar_text($request->path(), $item->http_path, $newSimilar);
 
                     if ($newSimilar > $similar) {
                         $similar = $newSimilar;
-                        $result  = $route;
+                        $route   = $item;
                     }
                 }
             }
         }
 
-        return $result;
+        return $route ?? null;
     }
 
     /**

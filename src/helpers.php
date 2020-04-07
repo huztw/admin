@@ -1,5 +1,6 @@
 <?php
 
+use Huztw\Admin\Auth\Permission;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\MessageBag;
 
@@ -284,6 +285,19 @@ if (!function_exists('admin_dump')) {
         ob_end_clean();
 
         return $contents;
+    }
+}
+
+if (!function_exists('admin_permission')) {
+
+    /**
+     * Create a Permission.
+     *
+     * @return \Huztw\Admin\Auth\Permission
+     */
+    function admin_permission()
+    {
+        return new Permission();
     }
 }
 

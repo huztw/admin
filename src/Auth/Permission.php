@@ -134,7 +134,7 @@ class Permission
             throw new \InvalidArgumentException("The [$this->items_slug] check method does not exist.");
         }
 
-        $args = is_array($args) ? $args : [$args];
+        $args = !empty($args) ? (is_array($args) ? $args : [$args]) : [null];
 
         $check = true;
 
@@ -164,10 +164,6 @@ class Permission
      */
     protected function shouldPassThroughPermission($permission): bool
     {
-        if (empty($permission)) {
-            return true;
-        }
-
         // Determine if permission is disable.
         if (PermissionDB::where('slug', $permission)->get()->first(function ($permission) {return $permission->disable ?? false;})) {
             return true;
@@ -193,19 +189,11 @@ class Permission
      *
      * @return bool
      */
-    protected function shouldPassThroughRoute($request): bool
+    protected function shouldPassThroughRoute($route): bool
     {
-        if (empty($request)) {
-            return true;
-        }
-
-        if (!$request instanceof Request) {
-            throw new \InvalidArgumentException('The parameter should be instance of \Illuminate\Http\Request.');
-        }
-
         // Get route's visibility.
-        if (Route::getProtectedRoute($request)) {
-            $visibility = Route::getProtectedRoute($request)->visibility;
+        if ($similar = Route::similarRoute()) {
+            $visibility = $similar->visibility;
         } else {
             $visibility = Route::getPublic();
         }
@@ -224,7 +212,7 @@ class Permission
             return false;
         }
 
-        if ($this->user::user()->cannot($this->items_slug, $request)) {
+        if ($this->user::user()->cannot($this->items_slug, $route)) {
             $this->error(403);
             return false;
         }
@@ -241,10 +229,6 @@ class Permission
      */
     protected function shouldPassThroughAction($action): bool
     {
-        if (empty($action)) {
-            return true;
-        }
-
         // Get action's visibility.
         if (($item = Action::where('slug', $action)->get()->first()) === null) {
             $visibility = Action::getPublic();
@@ -262,7 +246,7 @@ class Permission
         }
 
         if (!$this->user::user()) {
-            $this->error(404);
+            $this->error(401);
             return false;
         }
 

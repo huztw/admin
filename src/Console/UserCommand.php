@@ -40,19 +40,24 @@ class UserCommand extends Command
     {
         $userModel = config('admin.database.users_model');
 
-        $headers = ['User Name', 'Name', 'Roles', 'Created', 'Updated'];
+        $headers = ['User Name', 'Name', 'Roles', 'Permissions', 'Routes', 'Actions', 'Created', 'Updated'];
 
         $userslist = [];
         foreach ($userModel::all() as $user) {
             $roles = implode(',', $user->roles->pluck('name')->toArray());
 
-            array_push($userslist, [
+            $userdata = [
                 'username'   => $user->username,
                 'name'       => $user->name,
                 'roles'      => $roles,
+                'permission' => implode("\n", $user->allPermissions(true)->pluck('slug')->toArray()),
+                'routes'     => implode("\n", $user->allRoutes(true)->pluck('http_path')->toArray()),
+                'actions'    => implode("\n", $user->allActions(true)->pluck('slug')->toArray()),
                 'created_at' => date($user->created_at),
                 'updated_at' => date($user->updated_at),
-            ]);
+            ];
+
+            array_push($userslist, $userdata);
         }
 
         $this->table($headers, $userslist);

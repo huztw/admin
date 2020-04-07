@@ -41,7 +41,6 @@ class CreateAdminsTable extends Migration
             $table->increments('id');
             $table->string('name', 50)->unique();
             $table->string('slug', 50)->unique();
-            $table->boolean('permission')->default(true);
             $table->boolean('disable')->default(false);
             $table->timestamps();
         });
