@@ -3,11 +3,11 @@
 namespace Huztw\Admin\Database\Seeder;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Auth\Action;
+use Huztw\Admin\Database\Auth\View;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class ActionSeeder extends Seeder
+class ViewSeeder extends Seeder
 {
     /**
      * @var array
@@ -33,11 +33,11 @@ class ActionSeeder extends Seeder
         $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
 
         // insert to database.
-        Action::insertOrIgnore($this->items);
+        View::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = Action::max('id') + 1;
-        DB::statement("ALTER TABLE " . Action::table() . " AUTO_INCREMENT = " . $increments);
+        $increments = View::max('id') + 1;
+        DB::statement("ALTER TABLE " . View::table() . " AUTO_INCREMENT = " . $increments);
     }
 
     /**
@@ -51,7 +51,7 @@ class ActionSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['actions'] ?? [];
+        return $settings['views'] ?? [];
     }
 
     /**
@@ -88,11 +88,11 @@ class ActionSeeder extends Seeder
         }
 
         foreach (array_diff($origins, $slugs) as $id => $slug) {
-            Action::destroy($id);
+            View::destroy($id);
         }
 
         foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = Action::find($id);
+            $origin = View::find($id);
 
             $origin->name = $settings[$slug];
 
@@ -109,7 +109,7 @@ class ActionSeeder extends Seeder
     {
         $slugs = [];
 
-        foreach (Action::get() as $item) {
+        foreach (View::get() as $item) {
             $slugs[$item->id] = $item->slug;
         }
 

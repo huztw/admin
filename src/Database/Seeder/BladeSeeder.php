@@ -3,11 +3,12 @@
 namespace Huztw\Admin\Database\Seeder;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Auth\Action;
+use Huztw\Admin\Database\Auth\Blade;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
-class ActionSeeder extends Seeder
+class BladeSeeder extends Seeder
 {
     /**
      * @var array
@@ -21,11 +22,13 @@ class ActionSeeder extends Seeder
      */
     public function run()
     {
-        $settings = $this->getSettings(__DIR__ . '/../../');
+        $settings = $this->getBlades();
+
+        $settings = array_merge($settings, collect($this->getSettings(__DIR__ . '/../../'))->intersectByKeys($settings)->toArray());
 
         // Check if isn't first time run
         if (file_exists($this->settingsFile())) {
-            $settings = array_merge($settings, $this->getSettings());
+            $settings = array_merge($settings, collect($this->getSettings())->intersectByKeys($settings)->toArray());
         }
 
         $this->settings($settings);
@@ -33,11 +36,33 @@ class ActionSeeder extends Seeder
         $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
 
         // insert to database.
-        Action::insertOrIgnore($this->items);
+        Blade::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = Action::max('id') + 1;
-        DB::statement("ALTER TABLE " . Action::table() . " AUTO_INCREMENT = " . $increments);
+        $increments = Blade::max('id') + 1;
+        DB::statement("ALTER TABLE " . Blade::table() . " AUTO_INCREMENT = " . $increments);
+    }
+
+    /**
+     * Get the blades.
+     *
+     * @return array
+     */
+    protected function getBlades()
+    {
+        $admin = collect(File::allFiles(__DIR__ . '/../../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
+            return 'admin::' . str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
+        })->flip()->map(function () {
+            return null;
+        })->toArray();
+
+        $default = collect(File::allFiles(resource_path('views')))->map(function ($item) {
+            return str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
+        })->flip()->map(function () {
+            return null;
+        })->toArray();
+
+        return array_merge($admin, $default);
     }
 
     /**
@@ -51,7 +76,7 @@ class ActionSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['actions'] ?? [];
+        return $settings['blades'] ?? [];
     }
 
     /**
@@ -88,11 +113,11 @@ class ActionSeeder extends Seeder
         }
 
         foreach (array_diff($origins, $slugs) as $id => $slug) {
-            Action::destroy($id);
+            Blade::destroy($id);
         }
 
         foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = Action::find($id);
+            $origin = Blade::find($id);
 
             $origin->name = $settings[$slug];
 
@@ -109,7 +134,7 @@ class ActionSeeder extends Seeder
     {
         $slugs = [];
 
-        foreach (Action::get() as $item) {
+        foreach (Blade::get() as $item) {
             $slugs[$item->id] = $item->slug;
         }
 

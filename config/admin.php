@@ -228,6 +228,14 @@ return [
         'actions_table'            => 'admin_actions',
         'actions_model'            => Huztw\Admin\Database\Auth\Action::class,
 
+        // View table and model.
+        'views_table'              => 'admin_views',
+        'views_model'              => Huztw\Admin\Database\Auth\View::class,
+
+        // Blade table and model.
+        'blades_table'             => 'admin_blades',
+        'blades_model'             => Huztw\Admin\Database\Auth\Blade::class,
+
         // Pivot table for table above.
         'operation_log_table'      => 'admin_operation_log',
         'user_permissions_table'   => 'admin_user_permissions',
@@ -236,6 +244,7 @@ return [
         'role_menu_table'          => 'admin_role_menu',
         'permission_routes_table'  => 'admin_permission_routes',
         'permission_actions_table' => 'admin_permission_actions',
+        'view_blades_table'        => 'admin_view_blades',
     ],
 
     /*

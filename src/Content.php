@@ -3,11 +3,10 @@
 namespace Huztw\Admin;
 
 use Closure;
+use Huztw\Admin\Database\Auth\View;
+use Illuminate\Contracts\Support\Renderable;
 
-/**
- * Abstract Class Authorizable.
- */
-class Content
+class Content implements Renderable
 {
     /**
      * Content title.
@@ -31,9 +30,9 @@ class Content
     protected $breadcrumb = [];
 
     /**
-     * @var Row[]
+     * @var array
      */
-    protected $rows = [];
+    protected $contents = [];
 
     /**
      * @var array
@@ -79,22 +78,94 @@ class Content
     }
 
     /**
-     * Add one row for content body.
+     * Append view content for content body.
+     *
+     * @param $view
+     *
+     * @return $this
+     */
+    public function view($view)
+    {
+        $views = array_map(function ($item) {
+            return "view:$item";
+        }, $this->getBlades($view));
+
+        $this->append(...$views);
+
+        return $this;
+    }
+
+    /**
+     * Get blades from view.
+     *
+     * @param $view
+     *
+     * @return array
+     */
+    protected function getBlades($view)
+    {
+        $blades = View::where('slug', $view)->get()->first();
+
+        if ($blades) {
+            return $blades->blades->pluck('slug')->toArray();
+        }
+
+        return [];
+    }
+
+    /**
+     * Append content for content body.
      *
      * @param $content
      *
      * @return $this
      */
-    public function row($content)
+    public function append(...$contents)
     {
-        if ($content instanceof Closure) {
-            $row = new Row();
-            call_user_func($content, $row);
-            $this->addRow($row);
-        } else {
-            $this->addRow(new Row($content));
+        foreach ($contents as $content) {
+            if (is_string($content) && strpos($content, 'view:') === 0) {
+                $content = view(substr($content, strlen('view:')));
+            }
+
+            array_push($this->contents, $content);
         }
 
         return $this;
+    }
+
+    /**
+     * Build html of content.
+     *
+     * @return string
+     */
+    public function build()
+    {
+        ob_start();
+
+        foreach ($this->contents as $content) {
+            if ($content instanceof Renderable) {
+                echo $content->render();
+            } elseif ($content instanceof Closure) {
+                $content();
+            } else {
+                echo (string) $content;
+            }
+        }
+
+        $contents = ob_get_contents();
+
+        ob_end_clean();
+
+        return $contents;
+    }
+
+    /**
+     * Render this content.
+     *
+     * @return string
+     */
+    public function render()
+    {
+        return $this->build();
     }
 }

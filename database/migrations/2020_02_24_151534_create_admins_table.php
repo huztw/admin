@@ -64,6 +64,20 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
+        Schema::create(config('admin.database.views_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.blades_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->timestamps();
+        });
+
         Schema::create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('permission_id');
@@ -98,6 +112,13 @@ class CreateAdminsTable extends Migration
             $table->index(['permission_id', 'action_id']);
             $table->timestamps();
         });
+
+        Schema::create(config('admin.database.view_blades_table'), function (Blueprint $table) {
+            $table->integer('view_id');
+            $table->integer('blade_id');
+            $table->index(['view_id', 'blade_id']);
+            $table->timestamps();
+        });
     }
 
     /**
@@ -112,10 +133,13 @@ class CreateAdminsTable extends Migration
         Schema::dropIfExists(config('admin.database.permissions_table'));
         Schema::dropIfExists(config('admin.database.routes_table'));
         Schema::dropIfExists(config('admin.database.actions_table'));
+        Schema::dropIfExists(config('admin.database.views_table'));
+        Schema::dropIfExists(config('admin.database.blades_table'));
         Schema::dropIfExists(config('admin.database.user_permissions_table'));
         Schema::dropIfExists(config('admin.database.role_users_table'));
         Schema::dropIfExists(config('admin.database.role_permissions_table'));
         Schema::dropIfExists(config('admin.database.permission_routes_table'));
         Schema::dropIfExists(config('admin.database.permission_actions_table'));
+        Schema::dropIfExists(config('admin.database.view_blades_table'));
     }
 }
