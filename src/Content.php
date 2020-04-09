@@ -5,29 +5,21 @@ namespace Huztw\Admin;
 use Closure;
 use Huztw\Admin\Database\Auth\View;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Support\Arr;
 
 class Content implements Renderable
 {
+    /**
+     * @var string
+     */
+    protected $layout;
+
     /**
      * Content title.
      *
      * @var string
      */
-    protected $title = ' ';
-
-    /**
-     * Content description.
-     *
-     * @var string
-     */
-    protected $description = ' ';
-
-    /**
-     * Page breadcrumb.
-     *
-     * @var array
-     */
-    protected $breadcrumb = [];
+    protected $title = '';
 
     /**
      * @var array
@@ -37,7 +29,12 @@ class Content implements Renderable
     /**
      * @var array
      */
-    protected $view;
+    protected $_style_ = [];
+
+    /**
+     * @var array
+     */
+    protected $_script_ = [];
 
     /**
      * Content constructor.
@@ -64,15 +61,45 @@ class Content implements Renderable
     }
 
     /**
-     * Set description of content.
+     * Content style.
      *
-     * @param string $description
+     * @param string $styles
      *
      * @return $this
      */
-    public function description($description = '')
+    public function style(...$styles)
     {
-        $this->description = $description;
+        foreach ($styles as $style) {
+            array_push($this->_style_, $style);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Content script.
+     *
+     * @param string $scripts
+     *
+     * @return $this
+     */
+    public function script(...$scripts)
+    {
+        foreach ($scripts as $script) {
+            array_push($this->_script_, $script);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Content layout.
+     *
+     * @return string
+     */
+    public function layout($layout)
+    {
+        $this->layout = $layout;
 
         return $this;
     }
@@ -80,14 +107,27 @@ class Content implements Renderable
     /**
      * Append view content for content body.
      *
-     * @param $view
+     * @param string $view
+     * @param array  $data
+     * @param array  $mergeData
      *
      * @return $this
      */
-    public function view($view)
+    public function view($view, $data = [], $mergeData = [])
     {
-        $views = array_map(function ($item) {
-            return "view:$item";
+        $views = array_map(function ($item) use (&$data, $mergeData) {
+            if (isset($data[$item])) {
+                $shift = array_shift($data[$item]);
+            } else {
+                $shift = Arr::first($data, function ($value, $key) use (&$data) {
+                    if (is_int($key)) {
+                        unset($data[$key]);
+                        return true;
+                    }
+                });
+            }
+
+            return view($item, array_merge($mergeData, $shift ?? []));
         }, $this->getBlades($view));
 
         $this->append(...$views);
@@ -106,11 +146,11 @@ class Content implements Renderable
     {
         $blades = View::where('slug', $view)->get()->first();
 
-        if ($blades) {
-            return $blades->blades->pluck('slug')->toArray();
+        if (!$blades) {
+            throw new \InvalidArgumentException("Invalid view [$view].");
         }
 
-        return [];
+        return $blades->blades->pluck('slug')->toArray();
     }
 
     /**
@@ -123,10 +163,6 @@ class Content implements Renderable
     public function append(...$contents)
     {
         foreach ($contents as $content) {
-            if (is_string($content) && strpos($content, 'view:') === 0) {
-                $content = view(substr($content, strlen('view:')));
-            }
-
             array_push($this->contents, $content);
         }
 
@@ -166,6 +202,18 @@ class Content implements Renderable
      */
     public function render()
     {
-        return $this->build();
+        $items = [
+            '_title_'   => $this->title,
+            '_content_' => $this->build(),
+            '_user_'    => [],
+            '_style_'   => array_filter(array_unique($this->_style_)),
+            '_script_'  => array_filter(array_unique($this->_script_)),
+        ];
+
+        if (!$this->layout) {
+            $this->layout = 'admin';
+        }
+
+        return view(config('admin.layout.' . $this->layout), $items)->render();
     }
 }

@@ -6,7 +6,6 @@ use Closure;
 use Huztw\Admin\Database\Auth\Action;
 use Huztw\Admin\Database\Auth\Permission as PermissionDB;
 use Huztw\Admin\Database\Auth\Route;
-use Illuminate\Http\Request;
 
 class Permission
 {

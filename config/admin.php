@@ -304,33 +304,15 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Application Skin
-    |--------------------------------------------------------------------------
-    |
-    | This value is the skin of admin pages.
-    | @see https://adminlte.io/docs/2.4/layout
-    |
-    | Supported:
-    |    "skin-blue", "skin-blue-light", "skin-yellow", "skin-yellow-light",
-    |    "skin-green", "skin-green-light", "skin-purple", "skin-purple-light",
-    |    "skin-red", "skin-red-light", "skin-black", "skin-black-light".
-    |
-     */
-    'skin'                      => 'skin-blue-light',
-
-    /*
-    |--------------------------------------------------------------------------
     | Application layout
     |--------------------------------------------------------------------------
     |
     | This value is the layout of admin pages.
-    | @see https://adminlte.io/docs/2.4/layout
-    |
-    | Supported: "fixed", "layout-boxed", "layout-top-nav", "sidebar-collapse",
-    | "sidebar-mini".
     |
      */
-    'layout'                    => ['sidebar-mini', 'sidebar-collapse'],
+    'layout'                    => [
+        'admin' => 'admin::layout',
+    ],
 
     /*
     |--------------------------------------------------------------------------
