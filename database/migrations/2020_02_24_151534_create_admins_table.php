@@ -64,20 +64,6 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.views_table'), function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name', 50)->nullable();
-            $table->string('slug', 50)->unique();
-            $table->timestamps();
-        });
-
-        Schema::create(config('admin.database.blades_table'), function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('name', 50)->nullable();
-            $table->string('slug', 50)->unique();
-            $table->timestamps();
-        });
-
         Schema::create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
             $table->integer('user_id');
             $table->integer('permission_id');
@@ -113,10 +99,68 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
+        Schema::create(config('admin.database.views_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.blades_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.styles_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->string('style')->unique();
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.scripts_table'), function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name', 50)->nullable();
+            $table->string('slug', 50)->unique();
+            $table->string('script')->unique();
+            $table->timestamps();
+        });
+
         Schema::create(config('admin.database.view_blades_table'), function (Blueprint $table) {
             $table->integer('view_id');
             $table->integer('blade_id');
             $table->index(['view_id', 'blade_id']);
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.view_styles_table'), function (Blueprint $table) {
+            $table->integer('view_id');
+            $table->integer('style_id');
+            $table->index(['view_id', 'style_id']);
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.view_scripts_table'), function (Blueprint $table) {
+            $table->integer('view_id');
+            $table->integer('script_id');
+            $table->index(['view_id', 'script_id']);
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.blade_styles_table'), function (Blueprint $table) {
+            $table->integer('blade_id');
+            $table->integer('style_id');
+            $table->index(['blade_id', 'style_id']);
+            $table->timestamps();
+        });
+
+        Schema::create(config('admin.database.blade_scripts_table'), function (Blueprint $table) {
+            $table->integer('blade_id');
+            $table->integer('script_id');
+            $table->index(['blade_id', 'script_id']);
             $table->timestamps();
         });
     }
@@ -128,18 +172,27 @@ class CreateAdminsTable extends Migration
      */
     public function down()
     {
+        // Auth
         Schema::dropIfExists(config('admin.database.users_table'));
         Schema::dropIfExists(config('admin.database.roles_table'));
         Schema::dropIfExists(config('admin.database.permissions_table'));
         Schema::dropIfExists(config('admin.database.routes_table'));
         Schema::dropIfExists(config('admin.database.actions_table'));
-        Schema::dropIfExists(config('admin.database.views_table'));
-        Schema::dropIfExists(config('admin.database.blades_table'));
         Schema::dropIfExists(config('admin.database.user_permissions_table'));
         Schema::dropIfExists(config('admin.database.role_users_table'));
         Schema::dropIfExists(config('admin.database.role_permissions_table'));
         Schema::dropIfExists(config('admin.database.permission_routes_table'));
         Schema::dropIfExists(config('admin.database.permission_actions_table'));
+
+        // Layout
+        Schema::dropIfExists(config('admin.database.views_table'));
+        Schema::dropIfExists(config('admin.database.blades_table'));
+        Schema::dropIfExists(config('admin.database.styles_table'));
+        Schema::dropIfExists(config('admin.database.scripts_table'));
         Schema::dropIfExists(config('admin.database.view_blades_table'));
+        Schema::dropIfExists(config('admin.database.view_styles_table'));
+        Schema::dropIfExists(config('admin.database.view_scripts_table'));
+        Schema::dropIfExists(config('admin.database.blade_styles_table'));
+        Schema::dropIfExists(config('admin.database.blade_scripts_table'));
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Huztw\Admin\Database\Auth;
+namespace Huztw\Admin\Database\Layout;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,6 +46,34 @@ class Blade extends Model
         $relatedModel = config('admin.database.views_model');
 
         return $this->belongsToMany($relatedModel, $pivotTable, 'blade_id', 'view_id')->withTimestamps();
+    }
+
+    /**
+     * A blade belongs to many styles.
+     *
+     * @return BelongsToMany
+     */
+    public function styles()
+    {
+        $pivotTable = config('admin.database.blade_styles_table');
+
+        $relatedModel = config('admin.database.styles_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'blade_id', 'style_id')->withTimestamps();
+    }
+
+    /**
+     * A blade belongs to many scripts.
+     *
+     * @return BelongsToMany
+     */
+    public function scripts()
+    {
+        $pivotTable = config('admin.database.blade_scripts_table');
+
+        $relatedModel = config('admin.database.scripts_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'blade_id', 'script_id')->withTimestamps();
     }
 
     /**

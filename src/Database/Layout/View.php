@@ -1,6 +1,6 @@
 <?php
 
-namespace Huztw\Admin\Database\Auth;
+namespace Huztw\Admin\Database\Layout;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -46,6 +46,54 @@ class View extends Model
         $relatedModel = config('admin.database.blades_model');
 
         return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'blade_id')->withTimestamps();
+    }
+
+    /**
+     * A view belongs to many styles.
+     *
+     * @return BelongsToMany
+     */
+    public function styles()
+    {
+        $pivotTable = config('admin.database.view_styles_table');
+
+        $relatedModel = config('admin.database.styles_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'style_id')->withTimestamps();
+    }
+
+    /**
+     * A view belongs to many scripts.
+     *
+     * @return BelongsToMany
+     */
+    public function scripts()
+    {
+        $pivotTable = config('admin.database.view_scripts_table');
+
+        $relatedModel = config('admin.database.scripts_model');
+
+        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'script_id')->withTimestamps();
+    }
+
+    /**
+     * Get all styles for view.
+     *
+     * @return object
+     */
+    public function allStyles()
+    {
+        return $this->blades()->with('styles')->get()->pluck('styles')->flatten()->merge($this->styles);
+    }
+
+    /**
+     * Get all scripts for view.
+     *
+     * @return object
+     */
+    public function allScripts()
+    {
+        return $this->blades()->with('scripts')->get()->pluck('scripts')->flatten()->merge($this->scripts);
     }
 
     /**

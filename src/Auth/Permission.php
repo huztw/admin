@@ -40,6 +40,8 @@ class Permission
             $callback($this);
         }
 
+        $this->user();
+
         admin_error();
     }
 
@@ -62,10 +64,6 @@ class Permission
     {
         $this->items_slug = 'permission';
 
-        if (!$this->user) {
-            $this->user();
-        }
-
         if ($this->user::user()) {
             $this->items = $this->user::user()->allPermissions()->all();
         }
@@ -82,10 +80,6 @@ class Permission
     {
         $this->items_slug = 'route';
 
-        if (!$this->user) {
-            $this->user();
-        }
-
         if ($this->user::user()) {
             $this->items = $this->user::user()->allRoutes()->all();
         }
@@ -101,10 +95,6 @@ class Permission
     public function action()
     {
         $this->items_slug = 'action';
-
-        if (!$this->user) {
-            $this->user();
-        }
 
         if ($this->user::user()) {
             $this->items = $this->user::user()->allActions()->all();
@@ -288,13 +278,13 @@ class Permission
     /**
      * Set User.
      *
-     * @param string $user
+     * @param string|null $user
      *
      * @return \Huztw\Admin\Auth\Permission
      */
     public function user($user = null)
     {
-        $this->user_slug = $user ?? 'admin';
+        $this->user_slug = $user ?? config('admin.default');
 
         $setting = config('admin.permission.' . $this->user_slug);
 

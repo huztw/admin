@@ -3,12 +3,11 @@
 namespace Huztw\Admin\Database\Seeder;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Layout\Blade;
+use Huztw\Admin\Database\Layout\Script;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 
-class BladeSeeder extends Seeder
+class ScriptSeeder extends Seeder
 {
     /**
      * @var array
@@ -22,13 +21,11 @@ class BladeSeeder extends Seeder
      */
     public function run()
     {
-        $settings = $this->getBlades();
-
-        $settings = array_merge($settings, collect($this->getSettings(__DIR__ . '/../../'))->intersectByKeys($settings)->toArray());
+        $settings = $this->getSettings(__DIR__ . '/../../');
 
         // Check if isn't first time run
         if (file_exists($this->settingsFile())) {
-            $settings = array_merge($settings, collect($this->getSettings())->intersectByKeys($settings)->toArray());
+            $settings = array_merge($settings, $this->getSettings());
         }
 
         $this->settings($settings);
@@ -36,33 +33,11 @@ class BladeSeeder extends Seeder
         $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
 
         // insert to database.
-        Blade::insertOrIgnore($this->items);
+        Script::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = Blade::max('id') + 1;
-        DB::statement("ALTER TABLE " . Blade::table() . " AUTO_INCREMENT = " . $increments);
-    }
-
-    /**
-     * Get the blades.
-     *
-     * @return array
-     */
-    protected function getBlades()
-    {
-        $admin = collect(File::allFiles(__DIR__ . '/../../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
-            return 'admin::' . str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
-        })->filter()->flip()->map(function () {
-            return null;
-        })->toArray();
-
-        $default = collect(File::allFiles(resource_path('views')))->map(function ($item) {
-            return str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
-        })->filter()->flip()->map(function () {
-            return null;
-        })->toArray();
-
-        return array_merge($admin, $default);
+        $increments = Script::max('id') + 1;
+        DB::statement("ALTER TABLE " . Script::table() . " AUTO_INCREMENT = " . $increments);
     }
 
     /**
@@ -76,7 +51,7 @@ class BladeSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['blades'] ?? [];
+        return $settings['scripts'] ?? [];
     }
 
     /**
@@ -109,17 +84,37 @@ class BladeSeeder extends Seeder
         $origins = $this->originSlugs();
 
         foreach (array_diff($slugs, $origins) as $slug) {
-            $this->setItems(['slug' => $slug, 'name' => $settings[$slug]]);
+            if (is_array($settings[$slug])) {
+                $name   = !is_int($name = key($settings[$slug])) ? $name : null;
+                $script = current($settings[$slug]);
+            } else {
+                $script = $settings[$slug];
+            }
+
+            $this->setItems([
+                'slug'   => $slug,
+                'name'   => $name ?? null,
+                'script' => $script,
+            ]);
         }
 
         foreach (array_diff($origins, $slugs) as $id => $slug) {
-            Blade::destroy($id);
+            Script::destroy($id);
         }
 
         foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = Blade::find($id);
+            if (is_array($settings[$slug])) {
+                $name   = !is_int($name = key($settings[$slug])) ? $name : null;
+                $script = current($settings[$slug]);
+            } else {
+                $script = $settings[$slug];
+            }
 
-            $origin->name = $settings[$slug];
+            $origin = Script::find($id);
+
+            $origin->name = $name ?? null;
+
+            $origin->script = $script;
 
             $origin->save();
         }
@@ -134,7 +129,7 @@ class BladeSeeder extends Seeder
     {
         $slugs = [];
 
-        foreach (Blade::get() as $item) {
+        foreach (Script::get() as $item) {
             $slugs[$item->id] = $item->slug;
         }
 
@@ -153,6 +148,7 @@ class BladeSeeder extends Seeder
         array_push($this->items, [
             'name'       => $item['name'],
             'slug'       => $item['slug'],
+            'script'     => htmlentities($item['script'], ENT_COMPAT, 'UTF-8'),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

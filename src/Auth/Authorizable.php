@@ -64,11 +64,11 @@ abstract class Authorizable extends User
     }
 
     /**
-     * Get all permissions of user.
+     * Get all permissions for user.
      *
-     * @param  bool  $force
+     * @param bool $filter
      *
-     * @return mixed
+     * @return object
      */
     public function allPermissions($force = false)
     {
@@ -98,11 +98,11 @@ abstract class Authorizable extends User
     }
 
     /**
-     * Get all routes of user.
+     * Get all routes for user.
      *
-     * @param  bool  $filter
+     * @param bool $filter
      *
-     * @return mixed
+     * @return object
      */
     public function allRoutes($force = false)
     {
@@ -114,11 +114,11 @@ abstract class Authorizable extends User
     }
 
     /**
-     * Get all actions of user.
+     * Get all actions for user.
      *
-     * @param  bool  $filter
+     * @param bool $filter
      *
-     * @return mixed
+     * @return object
      */
     public function allActions($force = false)
     {

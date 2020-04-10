@@ -6,6 +6,8 @@ use Huztw\Admin\Database\Seeder\ActionSeeder;
 use Huztw\Admin\Database\Seeder\BladeSeeder;
 use Huztw\Admin\Database\Seeder\PermissionSeeder;
 use Huztw\Admin\Database\Seeder\RouteSeeder;
+use Huztw\Admin\Database\Seeder\ScriptSeeder;
+use Huztw\Admin\Database\Seeder\StyleSeeder;
 use Huztw\Admin\Database\Seeder\ViewSeeder;
 
 class PushCommand extends Command
@@ -52,6 +54,14 @@ class PushCommand extends Command
         $this->line('Blade table :');
 
         $this->call('db:seed', ['--class' => BladeSeeder::class]);
+
+        $this->line('Style table :');
+
+        $this->call('db:seed', ['--class' => StyleSeeder::class]);
+
+        $this->line('Script table :');
+
+        $this->call('db:seed', ['--class' => ScriptSeeder::class]);
 
         $this->line('<info>Pushing complete</info>');
     }

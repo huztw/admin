@@ -3,7 +3,7 @@
 namespace Huztw\Admin\Database\Seeder;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Auth\View;
+use Huztw\Admin\Database\Layout\View;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
