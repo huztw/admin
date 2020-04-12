@@ -4,25 +4,28 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
-        <title>@if($_title_){{ $_title_ }}@endif</title>
+        <title>@isset($_title_){{ $_title_ }}@endisset</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-        @if($_style_)
+        @isset($_style_)
             @foreach($_style_ as $style)
                 {!! $style !!}
             @endforeach
-        @endif
+        @endisset
+        @yield('style')
 
-        @if($_style_)
+        @isset($_script_)
             @foreach($_script_ as $script)
                 {!! $script !!}
             @endforeach
-        @endif
+        @endisset
+        @yield('script')
     </head>
     <body>
-        @if($_content_)
+        @isset($_content_)
             {!! $_content_ !!}
-        @endif
+        @endisset
+        @yield('content')
     </body>
 </html>

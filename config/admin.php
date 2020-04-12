@@ -334,7 +334,7 @@ return [
     |
      */
     'layout'                    => [
-        'admin' => 'admin::layout',
+        'admin' => 'admin::layout.layout',
     ],
 
     /*

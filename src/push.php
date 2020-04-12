@@ -70,7 +70,9 @@ return [
     |
      */
     'blades'      => [
-        'admin::index' => 'Admin Home',
+        'admin::index'    => 'Admin Home',
+        'admin::login'    => 'Admin Login',
+        'admin::register' => 'Admin Register',
     ],
 
     /*

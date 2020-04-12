@@ -50,11 +50,13 @@ class BladeSeeder extends Seeder
      */
     protected function getBlades()
     {
-        $admin = collect(File::allFiles(__DIR__ . '/../../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
-            return 'admin::' . str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
-        })->filter()->flip()->map(function () {
-            return null;
-        })->toArray();
+        $admin = [];
+
+        // $admin = collect(File::allFiles(__DIR__ . '/../../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
+        //     return 'admin::' . str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
+        // })->filter()->flip()->map(function () {
+        //     return null;
+        // })->toArray();
 
         $default = collect(File::allFiles(resource_path('views')))->map(function ($item) {
             return str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));

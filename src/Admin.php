@@ -3,21 +3,21 @@
 namespace Huztw\Admin;
 
 use Huztw\Admin\Traits\Bootstraps;
-use Huztw\Admin\Traits\Content;
 use Huztw\Admin\Traits\HasAssets;
 use Huztw\Admin\Traits\Routes;
+use Huztw\Admin\View\Content;
 use Illuminate\Support\Facades\Auth;
 
 class Admin
 {
-    use Bootstraps, Content, HasAssets, Routes;
+    use Bootstraps, HasAssets, Routes;
 
     /**
      * The Laravel admin version.
      *
      * @var string
      */
-    const VERSION = '1.2.1';
+    const VERSION = '1.2.2';
 
     /**
      * Returns the long version of Huztw-admin.
@@ -49,5 +49,15 @@ class Admin
         $guard = config('admin.auth.guard', 'admin');
 
         return Auth::guard($guard);
+    }
+
+    /**
+     * @param Closure $callable
+     *
+     * @return \Huztw\Admin\View\Content
+     */
+    public function content(Closure $callable = null)
+    {
+        return new Content($callable);
     }
 }

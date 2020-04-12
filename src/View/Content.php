@@ -1,6 +1,6 @@
 <?php
 
-namespace Huztw\Admin;
+namespace Huztw\Admin\View;
 
 use Closure;
 use Huztw\Admin\Database\Layout\Script;
@@ -123,7 +123,7 @@ class Content implements Renderable
             collect($script)->each(function ($script) {
                 call_user_func([$this, 'script'], $script);
             });
-            
+
             return $this;
         }
 
