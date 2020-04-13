@@ -2,10 +2,9 @@
 
 namespace DummyNamespace;
 
-use Huztw\Admin\Controllers\AuthController as BaseAuthController;
+use Huztw\Admin\Controllers\AuthController;
 
-class LoginController extends BaseAuthController
+class LoginController extends AuthController
 {
 
 }
-

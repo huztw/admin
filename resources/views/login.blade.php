@@ -1,17 +1,17 @@
-@extends('admin::layout.layout')
+@extends('admin::layouts.admin')
 
-@section('style')
+@push('style')
     <!-- Styles -->
     <link href="{{ admin_asset('vendor/huztw-admin/css/admin.css') }}" rel="stylesheet">
-@endsection
+@endpush
 
-@section('script')
+@push('script')
     <!-- Scripts -->
     <script src="{{ admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') }} "></script>
     <script src="{{ admin_asset('vendor/huztw-admin/js/admin.js') }}" defer></script>
-@endsection
+@endpush
 
-@section('content')
+@push('content')
 
     @include('admin::partials.header')
 
@@ -74,4 +74,4 @@
 
     @include('admin::partials.footer')
 
-@endsection
+@endpush

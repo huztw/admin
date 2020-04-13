@@ -247,14 +247,6 @@ return [
         'blades_table'             => 'admin_blades',
         'blades_model'             => Huztw\Admin\Database\Layout\Blade::class,
 
-        // Style table and model.
-        'styles_table'             => 'admin_styles',
-        'styles_model'             => Huztw\Admin\Database\Layout\Style::class,
-
-        // Script table and model.
-        'scripts_table'            => 'admin_scripts',
-        'scripts_model'            => Huztw\Admin\Database\Layout\Script::class,
-
         // Pivot table for table above.
         'operation_log_table'      => 'admin_operation_log',
         'user_permissions_table'   => 'admin_user_permissions',
@@ -264,10 +256,6 @@ return [
         'permission_routes_table'  => 'admin_permission_routes',
         'permission_actions_table' => 'admin_permission_actions',
         'view_blades_table'        => 'admin_view_blades',
-        'view_styles_table'        => 'admin_view_styles',
-        'view_scripts_table'       => 'admin_view_scripts',
-        'blade_styles_table'       => 'admin_blade_styles',
-        'blade_scripts_table'      => 'admin_blade_scripts',
     ],
 
     /*
@@ -324,18 +312,6 @@ return [
     |
      */
     'map_provider'              => 'google',
-
-    /*
-    |--------------------------------------------------------------------------
-    | Application layout
-    |--------------------------------------------------------------------------
-    |
-    | This value is the layout of admin pages.
-    |
-     */
-    'layout'                    => [
-        'admin' => 'admin::layout.layout',
-    ],
 
     /*
     |--------------------------------------------------------------------------

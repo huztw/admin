@@ -3,18 +3,12 @@
 namespace Huztw\Admin\View;
 
 use Closure;
-use Huztw\Admin\Database\Layout\Script;
-use Huztw\Admin\Database\Layout\Style;
 use Huztw\Admin\Database\Layout\View;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Arr;
 
 class Content implements Renderable
 {
-    /**
-     * @var string
-     */
-    protected $layout;
 
     /**
      * @var string
@@ -22,41 +16,14 @@ class Content implements Renderable
     protected $view;
 
     /**
-     * @var array
-     */
-    protected $blade = [];
-
-    /**
-     * @var array
-     */
-    protected $style = [];
-
-    /**
-     * @var array
-     */
-    protected $script = [];
-
-    /**
-     * Content title.
-     *
      * @var string
      */
-    protected $title = '';
+    protected $layout;
 
     /**
      * @var array
      */
     protected $contents = [];
-
-    /**
-     * @var array
-     */
-    protected $_style_ = [];
-
-    /**
-     * @var array
-     */
-    protected $_script_ = [];
 
     /**
      * Content constructor.
@@ -68,20 +35,19 @@ class Content implements Renderable
         if ($callback instanceof Closure) {
             $callback($this);
         }
-
-        $this->layout();
     }
 
     /**
-     * @param string $title
+     * Get Content value.
+     *
+     * @param string $layout
+     * @param array  $data
      *
      * @return $this
      */
-    public function title($title)
+    public function get($name)
     {
-        $this->title = $title;
-
-        return $this;
+        return $this->$name;
     }
 
     /**
@@ -91,21 +57,9 @@ class Content implements Renderable
      *
      * @return $this
      */
-    public function style($style)
+    public function style(...$styles)
     {
-        if (is_array($style)) {
-            collect($style)->each(function ($style) {
-                call_user_func([$this, 'style'], $style);
-            });
-
-            return $this;
-        }
-
-        if ($style instanceof Style) {
-            $style = $style->style;
-        }
-
-        array_push($this->_style_, $style);
+        $this->append('admin::partials.style', ['_style_' => $styles]);
 
         return $this;
     }
@@ -117,21 +71,9 @@ class Content implements Renderable
      *
      * @return $this
      */
-    public function script($script)
+    public function script(...$scripts)
     {
-        if (is_array($script)) {
-            collect($script)->each(function ($script) {
-                call_user_func([$this, 'script'], $script);
-            });
-
-            return $this;
-        }
-
-        if ($script instanceof Script) {
-            $script = $script->script;
-        }
-
-        array_push($this->_script_, $script);
+        $this->append('admin::partials.script', ['_script_' => $scripts]);
 
         return $this;
     }
@@ -139,19 +81,14 @@ class Content implements Renderable
     /**
      * Content layout.
      *
-     * @return string|null
+     * @param string $layout
+     * @param array  $data
+     *
+     * @return $this
      */
-    public function layout($layout = null)
+    public function layout($layout, $data = [])
     {
-        $layout = $layout ?? config('admin.default');
-
-        $setting = config('admin.layout.' . $layout);
-
-        if ($setting === null) {
-            throw new \InvalidArgumentException("Invalid layout with [$layout].");
-        }
-
-        $this->layout = $setting;
+        $this->layout = view($layout, $data);
 
         return $this;
     }
@@ -189,15 +126,13 @@ class Content implements Renderable
     {
         $this->find($view);
 
-        $this->allBlades();
+        $blades = collect($this->view->blades->all())->pluck('slug')->toArray();
 
-        $this->allStyles();
+        $this->layout(array_shift($blades), $mergeData);
 
-        $this->allScripts();
-
-        $views = array_map(function ($item) use (&$data, $mergeData) {
-            if (isset($data[$item])) {
-                $shift = array_shift($data[$item]);
+        foreach ($blades as $key => $blade) {
+            if (isset($data[$blade])) {
+                $shift = array_shift($data[$blade]);
             } else {
                 $shift = Arr::first($data, function ($value, $key) use (&$data) {
                     if (is_int($key)) {
@@ -207,76 +142,27 @@ class Content implements Renderable
                 });
             }
 
-            return view($item, array_merge($mergeData, $shift ?? []));
-        }, collect($this->blade)->pluck('slug')->toArray());
-
-        $this->append(...$views);
+            $this->append($blade, $shift ?? []);
+        }
 
         return $this;
     }
 
     /**
-     * Get view.
+     * Prepend content for content body.
      *
      * @param string $view
+     * @param array  $data
      *
-     * @return object
+     * @return $this
      */
-    public function getView($view)
+    public function prepend($view, $data = [])
     {
-        $get = View::where('slug', $view)->get()->first();
-
-        if (!$get) {
-            throw new \InvalidArgumentException("Invalid view [$view].");
+        if (!$view instanceof Renderable) {
+            $view = view($view, $data);
         }
 
-        return $get;
-    }
-
-    /**
-     * All blades from view.
-     *
-     * @return object
-     */
-    public function allBlades()
-    {
-        if (!$this->view) {
-            throw new \InvalidArgumentException("Invalid view [$this->view].");
-        }
-
-        $this->blade = $this->view->blades->all();
-
-        return $this;
-    }
-
-    /**
-     * All styles from view.
-     *
-     * @return array
-     */
-    public function allStyles()
-    {
-        if (!$this->view) {
-            throw new \InvalidArgumentException("Invalid view [$this->view].");
-        }
-
-        $this->style = $this->view->allStyles()->all();
-
-        return $this;
-    }
-
-    /**
-     * All scripts from view.
-     *
-     * @return array
-     */
-    public function allScripts()
-    {
-        if (!$this->view) {
-            throw new \InvalidArgumentException("Invalid view [$this->view].");
-        }
-
-        $this->script = $this->view->allScripts()->all();
+        array_unshift($this->contents, $view);
 
         return $this;
     }
@@ -284,26 +170,37 @@ class Content implements Renderable
     /**
      * Append content for content body.
      *
-     * @param $content
+     * @param string $view
+     * @param array  $data
      *
      * @return $this
      */
-    public function append(...$contents)
+    public function append($view, $data = [])
     {
-        foreach ($contents as $content) {
-            array_push($this->contents, $content);
+        if (!$view instanceof Renderable) {
+            $view = view($view, $data);
         }
+
+        array_push($this->contents, $view);
 
         return $this;
     }
 
     /**
-     * Build html of content.
+     * Render this content.
      *
      * @return string
      */
-    public function build()
+    public function render()
     {
+        if ($this->layout) {
+            foreach ($this->contents as $key => $content) {
+                $this->layout->with($key, $content);
+            }
+
+            $this->prepend($this->layout);
+        }
+
         ob_start();
 
         foreach ($this->contents as $content) {
@@ -321,32 +218,5 @@ class Content implements Renderable
         ob_end_clean();
 
         return $contents;
-    }
-
-    public function getStyle()
-    {
-
-    }
-
-    /**
-     * Render this content.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $this->style($this->style);
-
-        $this->script($this->script);
-
-        $items = [
-            '_title_'   => $this->title,
-            '_content_' => $this->build(),
-            '_user_'    => [],
-            '_style_'   => array_filter(array_unique($this->_style_)),
-            '_script_'  => array_filter(array_unique($this->_script_)),
-        ];
-
-        return view($this->layout, $items)->render();
     }
 }

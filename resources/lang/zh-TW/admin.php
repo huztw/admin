@@ -38,6 +38,7 @@ return [
     'failed'                => '失敗',
     'filter'                => '篩選',
     'grid_items_selected'   => '{n} 已被選取',
+    'home'                  => '首頁',
     'http'                  => [
         'method' => 'HTTP方法',
         'path'   => 'HTTP路徑',

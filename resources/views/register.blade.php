@@ -1,17 +1,17 @@
-@extends('admin::layout.layout')
+@extends('admin::layouts.admin')
 
-@section('style')
+@push('style')
     <!-- Styles -->
     <link href="{{ admin_asset('vendor/huztw-admin/css/admin.css') }}" rel="stylesheet">
-@endsection
+@endpush
 
-@section('script')
+@push('script')
     <!-- Scripts -->
     <script src="{{ admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') }} "></script>
     <script src="{{ admin_asset('vendor/huztw-admin/js/admin.js') }}" defer></script>
-@endsection
+@endpush
 
-@section('content')
+@push('content')
 
     @include('admin::partials.header')
 
@@ -19,14 +19,14 @@
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">{{ __('Register') }}</div>
+                    <div class="card-header">{{ trans("admin.register") }}</div>
 
                     <div class="card-body">
                         <form method="POST" action="{{ admin_url('register') }}">
                             @csrf
 
                             <div class="form-group row">
-                                <label for="username" class="col-md-4 col-form-label text-md-right">{{ __('Account') }}</label>
+                                <label for="username" class="col-md-4 col-form-label text-md-right">{{ trans("admin.username") }}</label>
 
                                 <div class="col-md-6">
                                     <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="username" autofocus>
@@ -40,7 +40,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="name" class="col-md-4 col-form-label text-md-right">{{ __('Name') }}</label>
+                                <label for="name" class="col-md-4 col-form-label text-md-right">{{ trans("admin.name") }}</label>
 
                                 <div class="col-md-6">
                                     <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
@@ -54,7 +54,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="password" class="col-md-4 col-form-label text-md-right">{{ __('Password') }}</label>
+                                <label for="password" class="col-md-4 col-form-label text-md-right">{{ trans("admin.password") }}</label>
 
                                 <div class="col-md-6">
                                     <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
@@ -68,7 +68,7 @@
                             </div>
 
                             <div class="form-group row">
-                                <label for="password-confirm" class="col-md-4 col-form-label text-md-right">{{ __('Confirm Password') }}</label>
+                                <label for="password-confirm" class="col-md-4 col-form-label text-md-right">{{ trans("admin.password_confirmation") }}</label>
 
                                 <div class="col-md-6">
                                     <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
@@ -78,7 +78,7 @@
                             <div class="form-group row mb-0">
                                 <div class="col-md-6 offset-md-4">
                                     <button type="submit" class="btn btn-primary">
-                                        {{ __('Register') }}
+                                        {{ trans("admin.register") }}
                                     </button>
                                 </div>
                             </div>
@@ -91,4 +91,4 @@
 
     @include('admin::partials.footer')
 
-@endsection
+@endpush

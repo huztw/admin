@@ -38,6 +38,7 @@ return [
     'failed'                => 'Failed',
     'filter'                => 'Filter',
     'grid_items_selected'   => '{n} items selected',
+    'home'                  => 'Home',
     'http'                  => [
         'method' => 'HTTP method',
         'path'   => 'HTTP path',

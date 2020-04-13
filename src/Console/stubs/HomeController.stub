@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Admin\Controllers;
+namespace DummyNamespace;
 
 use App\Http\Controllers\Controller;
 use Huztw\Admin\View\Content;
@@ -9,6 +9,11 @@ class HomeController extends Controller
 {
     public function index(Content $content)
     {
-        return view('admin::index');
+        return $content
+            ->layout('admin::layouts.admin', ['_title_' => trans("admin.home")])
+            ->append('admin::index')
+            ->style('<link href="' . admin_asset('vendor/huztw-admin/css/admin.css') . '" rel="stylesheet">')
+            ->script('<script src="' . admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') . '"></script>')
+            ->script('<script src="' . admin_asset('vendor/huztw-admin/js/admin.js') . '"></script>');
     }
 }
