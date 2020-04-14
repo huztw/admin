@@ -3,6 +3,7 @@
 namespace Huztw\Admin\Console;
 
 use Huztw\Admin\Database\Seeder\ActionSeeder;
+use Huztw\Admin\Database\Seeder\AssetSeeder;
 use Huztw\Admin\Database\Seeder\BladeSeeder;
 use Huztw\Admin\Database\Seeder\PermissionSeeder;
 use Huztw\Admin\Database\Seeder\RouteSeeder;
@@ -52,6 +53,10 @@ class PushCommand extends Command
         $this->line('Blade table :');
 
         $this->call('db:seed', ['--class' => BladeSeeder::class]);
+
+        $this->line('Asset table :');
+
+        $this->call('db:seed', ['--class' => AssetSeeder::class]);
 
         $this->line('<info>Pushing complete</info>');
     }

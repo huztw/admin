@@ -3,11 +3,11 @@
 namespace Huztw\Admin\Database\Seeder;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Layout\View;
+use Huztw\Admin\Database\Layout\Asset;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class ViewSeeder extends Seeder
+class AssetSeeder extends Seeder
 {
     /**
      * @var array
@@ -33,11 +33,11 @@ class ViewSeeder extends Seeder
         $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
 
         // insert to database.
-        View::insertOrIgnore($this->items);
+        Asset::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = View::max('id') + 1;
-        DB::statement("ALTER TABLE " . View::table() . " AUTO_INCREMENT = " . $increments);
+        $increments = Asset::max('id') + 1;
+        DB::statement("ALTER TABLE " . Asset::table() . " AUTO_INCREMENT = " . $increments);
     }
 
     /**
@@ -51,7 +51,7 @@ class ViewSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['views'] ?? [];
+        return $settings['assets'] ?? [];
     }
 
     /**
@@ -79,30 +79,42 @@ class ViewSeeder extends Seeder
      */
     protected function settings($settings)
     {
-        $slugs = [];
-
-        foreach ($settings as $key => $value) {
-            if (is_int($key)) {
-                array_push($slugs, $value);
-            } else {
-                array_push($slugs, $key);
-            }
-        }
+        $slugs = array_keys($settings);
 
         $origins = $this->originSlugs();
 
         foreach (array_diff($slugs, $origins) as $slug) {
-            $this->setItems(['slug' => $slug, 'name' => $settings[$slug] ?? null]);
+            if (is_array($settings[$slug])) {
+                $name  = !is_int($name = key($settings[$slug])) ? $name : null;
+                $asset = current($settings[$slug]);
+            } else {
+                $asset = $settings[$slug];
+            }
+
+            $this->setItems([
+                'slug'  => $slug,
+                'name'  => $name ?? null,
+                'asset' => $asset,
+            ]);
         }
 
         foreach (array_diff($origins, $slugs) as $id => $slug) {
-            View::destroy($id);
+            Asset::destroy($id);
         }
 
         foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = View::find($id);
+            if (is_array($settings[$slug])) {
+                $name  = !is_int($name = key($settings[$slug])) ? $name : null;
+                $asset = current($settings[$slug]);
+            } else {
+                $asset = $settings[$slug];
+            }
 
-            $origin->name = $settings[$slug] ?? null;
+            $origin = Asset::find($id);
+
+            $origin->name = $name ?? null;
+
+            $origin->asset = $asset;
 
             $origin->save();
         }
@@ -117,7 +129,7 @@ class ViewSeeder extends Seeder
     {
         $slugs = [];
 
-        foreach (View::get() as $item) {
+        foreach (Asset::get() as $item) {
             $slugs[$item->id] = $item->slug;
         }
 
@@ -134,8 +146,9 @@ class ViewSeeder extends Seeder
     protected function setItems($item)
     {
         array_push($this->items, [
-            'name'       => $item['name'],
             'slug'       => $item['slug'],
+            'name'       => $item['name'],
+            'asset'      => htmlentities($item['asset'], ENT_COMPAT, 'UTF-8'),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

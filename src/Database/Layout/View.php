@@ -25,7 +25,7 @@ class View extends Model
     }
 
     /**
-     * Database table of Views.
+     * Database table.
      *
      * @return string
      */
@@ -45,55 +45,57 @@ class View extends Model
 
         $relatedModel = config('admin.database.blades_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'blade_id')->withTimestamps();
+        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'blade_id')
+            ->withPivot(['view_id', 'blade_id', 'type', 'sort'])->withTimestamps();
     }
 
     /**
-     * A view belongs to many styles.
+     * A view belongs to many assets.
      *
      * @return BelongsToMany
      */
-    public function styles()
+    public function assets()
     {
-        $pivotTable = config('admin.database.view_styles_table');
+        $pivotTable = config('admin.database.view_assets_table');
 
-        $relatedModel = config('admin.database.styles_model');
+        $relatedModel = config('admin.database.assets_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'style_id')->withTimestamps();
+        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'asset_id')
+            ->withPivot(['view_id', 'asset_id', 'type', 'sort'])->withTimestamps();
     }
 
     /**
-     * A view belongs to many scripts.
-     *
-     * @return BelongsToMany
-     */
-    public function scripts()
-    {
-        $pivotTable = config('admin.database.view_scripts_table');
-
-        $relatedModel = config('admin.database.scripts_model');
-
-        return $this->belongsToMany($relatedModel, $pivotTable, 'view_id', 'script_id')->withTimestamps();
-    }
-
-    /**
-     * Get all styles for view.
+     * Get all assets for view.
      *
      * @return object
      */
-    public function allStyles()
+    public function isLayout()
     {
-        return $this->blades()->with('styles')->get()->pluck('styles')->flatten()->merge($this->styles);
+        return $this->blades->filter(function ($item, $key) {
+            return 'layout' == $item->pivot->type;
+        });
     }
 
     /**
-     * Get all scripts for view.
+     * Get all assets for view.
      *
      * @return object
      */
-    public function allScripts()
+    public function isNotLayout()
     {
-        return $this->blades()->with('scripts')->get()->pluck('scripts')->flatten()->merge($this->scripts);
+        return $this->blades->filter(function ($item, $key) {
+            return 'layout' != $item->pivot->type;
+        });
+    }
+
+    /**
+     * Get all assets for view.
+     *
+     * @return object
+     */
+    public function allAssets()
+    {
+        return $this->blades()->with('assets')->get()->pluck('assets')->flatten()->merge($this->assets);
     }
 
     /**
@@ -107,6 +109,7 @@ class View extends Model
 
         static::deleting(function ($model) {
             $model->blades()->detach();
+            $model->assets()->detach();
         });
     }
 }

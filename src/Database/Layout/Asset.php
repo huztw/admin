@@ -4,9 +4,9 @@ namespace Huztw\Admin\Database\Layout;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Blade extends Model
+class Asset extends Model
 {
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name', 'slug', 'asset'];
 
     /**
      * Create a new Eloquent model instance.
@@ -31,36 +31,53 @@ class Blade extends Model
      */
     public static function table()
     {
-        return config('admin.database.blades_table');
+        return config('admin.database.assets_table');
     }
 
     /**
-     * A blade belongs to many views.
+     * A asset belongs to many views.
      *
      * @return BelongsToMany
      */
     public function views()
     {
-        $pivotTable = config('admin.database.view_blades_table');
+        $pivotTable = config('admin.database.view_assets_table');
 
         $relatedModel = config('admin.database.views_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'blade_id', 'view_id')->withTimestamps();
+        return $this->belongsToMany($relatedModel, $pivotTable, 'asset_id', 'view_id')->withTimestamps();
     }
 
     /**
-     * A blade belongs to many assets.
+     * A asset belongs to many blades.
      *
      * @return BelongsToMany
      */
-    public function assets()
+    public function blades()
     {
         $pivotTable = config('admin.database.blade_assets_table');
 
-        $relatedModel = config('admin.database.assets_model');
+        $relatedModel = config('admin.database.blades_model');
 
-        return $this->belongsToMany($relatedModel, $pivotTable, 'blade_id', 'asset_id')
-            ->withPivot(['blade_id', 'asset_id', 'type', 'sort'])->withTimestamps();
+        return $this->belongsToMany($relatedModel, $pivotTable, 'asset_id', 'blade_id')->withTimestamps();
+    }
+
+    /**
+     * @param $asset
+     */
+    public function setAssetAttribute($asset)
+    {
+        $this->attributes['asset'] = htmlentities($asset, ENT_COMPAT, 'UTF-8');
+    }
+
+    /**
+     * @param $asset
+     *
+     * @return string
+     */
+    public function getAssetAttribute($asset)
+    {
+        return html_entity_decode($asset, ENT_COMPAT, 'UTF-8');
     }
 
     /**
@@ -74,7 +91,7 @@ class Blade extends Model
 
         static::deleting(function ($model) {
             $model->views()->detach();
-            $model->assets()->detach();
+            $model->blades()->detach();
         });
     }
 }

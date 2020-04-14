@@ -28,7 +28,7 @@ class Permission extends Model
     }
 
     /**
-     * Database table of Permissions.
+     * Database table.
      *
      * @return string
      */

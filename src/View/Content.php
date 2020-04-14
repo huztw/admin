@@ -51,6 +51,21 @@ class Content implements Renderable
     }
 
     /**
+     * Push to content.
+     *
+     * @param string $push
+     * @param mixed $data
+     *
+     * @return $this
+     */
+    public function push($push, $data)
+    {
+        $this->append('admin::partials.push', ['key' => $push, 'value' => $data]);
+
+        return $this;
+    }
+
+    /**
      * Content style.
      *
      * @param string $styles
@@ -59,7 +74,7 @@ class Content implements Renderable
      */
     public function style(...$styles)
     {
-        $this->append('admin::partials.style', ['_style_' => $styles]);
+        $this->push('style', $styles);
 
         return $this;
     }
@@ -73,7 +88,7 @@ class Content implements Renderable
      */
     public function script(...$scripts)
     {
-        $this->append('admin::partials.script', ['_script_' => $scripts]);
+        $this->push('script', $scripts);
 
         return $this;
     }
@@ -114,6 +129,57 @@ class Content implements Renderable
     }
 
     /**
+     * Push Content assets.
+     *
+     * @return $this
+     */
+    public function pushAssets()
+    {
+        $assets = $this->view->allAssets()->sortBy(function ($item, $key) {
+            return $item->pivot->sort;
+        });
+
+        foreach ($assets as $asset) {
+            $this->push($asset->pivot->type, $asset->asset);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Push Content blades.
+     *
+     * @param array $data
+     *
+     * @return $this
+     */
+    public function pushBlades($data = [])
+    {
+        $blades = $this->view->isNotLayout()->sortBy(function ($item, $key) {
+            return $item->pivot->sort;
+        });
+
+        foreach ($blades as $blade) {
+            $slug = $blade->slug;
+
+            if (isset($data[$slug])) {
+                $shift = array_shift($data[$slug]);
+            } else {
+                $shift = Arr::first($data, function ($value, $key) use (&$data) {
+                    if (is_int($key)) {
+                        unset($data[$key]);
+                        return true;
+                    }
+                });
+            }
+
+            $this->push($blade->pivot->type, view($slug, $shift ?? [])->render());
+        }
+
+        return $this;
+    }
+
+    /**
      * Append view content for content body.
      *
      * @param string $view
@@ -126,24 +192,13 @@ class Content implements Renderable
     {
         $this->find($view);
 
-        $blades = collect($this->view->blades->all())->pluck('slug')->toArray();
-
-        $this->layout(array_shift($blades), $mergeData);
-
-        foreach ($blades as $key => $blade) {
-            if (isset($data[$blade])) {
-                $shift = array_shift($data[$blade]);
-            } else {
-                $shift = Arr::first($data, function ($value, $key) use (&$data) {
-                    if (is_int($key)) {
-                        unset($data[$key]);
-                        return true;
-                    }
-                });
-            }
-
-            $this->append($blade, $shift ?? []);
+        if ($layout = $this->view->isLayout()->first()) {
+            $this->layout($layout->slug, $mergeData);
         }
+
+        $this->pushBlades($data);
+
+        $this->pushAssets();
 
         return $this;
     }

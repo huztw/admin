@@ -34,7 +34,7 @@ class Action extends Model
     }
 
     /**
-     * Database table of Actions.
+     * Database table.
      *
      * @return string
      */

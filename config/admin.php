@@ -247,6 +247,10 @@ return [
         'blades_table'             => 'admin_blades',
         'blades_model'             => Huztw\Admin\Database\Layout\Blade::class,
 
+        // Asset table and model.
+        'assets_table'             => 'admin_assets',
+        'assets_model'             => Huztw\Admin\Database\Layout\Asset::class,
+
         // Pivot table for table above.
         'operation_log_table'      => 'admin_operation_log',
         'user_permissions_table'   => 'admin_user_permissions',
@@ -256,6 +260,8 @@ return [
         'permission_routes_table'  => 'admin_permission_routes',
         'permission_actions_table' => 'admin_permission_actions',
         'view_blades_table'        => 'admin_view_blades',
+        'view_assets_table'        => 'admin_view_assets',
+        'blade_assets_table'       => 'admin_blade_assets',
     ],
 
     /*
