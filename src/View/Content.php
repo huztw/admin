@@ -3,6 +3,8 @@
 namespace Huztw\Admin\View;
 
 use Closure;
+use Huztw\Admin\Database\Layout\Asset;
+use Huztw\Admin\Database\Layout\Blade;
 use Huztw\Admin\Database\Layout\View;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Arr;
@@ -24,6 +26,11 @@ class Content implements Renderable
      * @var array
      */
     protected $contents = [];
+
+    /**
+     * @var array
+     */
+    protected $datas = [];
 
     /**
      * Content constructor.
@@ -51,6 +58,19 @@ class Content implements Renderable
     }
 
     /**
+     * Get push format.
+     *
+     * @param string $push
+     * @param mixed $data
+     *
+     * @return \Illuminate\View\View
+     */
+    protected function getPush($push, $data = [])
+    {
+        return view('admin::partials.push', ['key' => $push, 'value' => $data]);
+    }
+
+    /**
      * Push to content.
      *
      * @param string $push
@@ -68,22 +88,49 @@ class Content implements Renderable
             return $this;
         }
 
-        $this->append('admin::partials.push', ['key' => $push, 'value' => $data]);
+        $this->add($this->getPush($push, $data), true);
 
         return $this;
+    }
+
+    /**
+     * Content datas.
+     *
+     * @param array $datas
+     *
+     * @return $this
+     */
+    public function data($datas)
+    {
+        $this->datas = $datas;
+
+        return $this;
+
+    }
+    public function shiftData($key)
+    {
+        $data = [];
+
+        if (isset($this->datas[$key])) {
+            $data = array_shift($this->datas[$key]);
+        }
+
+        return $data;
     }
 
     /**
      * Content layout.
      *
      * @param string $layout
-     * @param array  $data
+     * @param array|null $data
      *
      * @return $this
      */
-    public function layout($layout, $data = [])
+    public function layout($layout, $data = null)
     {
-        $this->layout = view($layout, $data);
+        $this->layout = view($layout, $data ?? $this->shiftData($layout));
+
+        $this->add($this->layout, true);
 
         return $this;
     }
@@ -105,68 +152,35 @@ class Content implements Renderable
 
         $this->view = $get;
 
+        $this->pushBlades();
+
+        $this->pushAssets();
+
         return $this;
     }
 
     /**
      * Push Content assets.
-     *
-     * @return $this
      */
     protected function pushAssets()
     {
-        $assets = $this->view->allAssets()->sortBy(function ($item, $key) {
+        $this->view->allAssets()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
+        })->each(function ($item, $key) {
+            $this->add($item, true);
         });
-
-        foreach ($assets as $asset) {
-            if (empty($type = $asset->pivot->type)) {
-                $this->add($asset->asset, true);
-            } else {
-                $this->push($type, $asset->asset);
-            }
-        }
-
-        return $this;
     }
 
     /**
      * Push Content blades.
-     *
-     * @param array $data
-     *
-     * @return $this
      */
-    protected function pushBlades($data = [])
+    protected function pushBlades()
     {
-        $blades = $this->view->isNotLayout()->sortBy(function ($item, $key) {
+        $this->view->isNotLayout()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
+        })->each(function ($item, $key) {
+            $this->add($item, true);
         });
-
-        foreach ($blades as $blade) {
-            $slug = $blade->slug;
-
-            if (isset($data[$slug])) {
-                $shift = array_shift($data[$slug]);
-            } else {
-                $shift = Arr::first($data, function ($value, $key) use (&$data) {
-                    if (is_int($key)) {
-                        unset($data[$key]);
-                        return true;
-                    }
-                });
-            }
-
-            $view = view($slug, $shift ?? []);
-
-            if (empty($type = $blade->pivot->type)) {
-                $this->append($view);
-            } else {
-                $this->push($type, $view->render());
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -183,12 +197,8 @@ class Content implements Renderable
         $this->find($view);
 
         if ($layout = $this->view->isLayout()->first()) {
-            $this->layout($layout->slug, $mergeData);
+            $this->layout($layout->slug);
         }
-
-        $this->pushBlades($data);
-
-        $this->pushAssets();
 
         return $this;
     }
@@ -207,7 +217,7 @@ class Content implements Renderable
             $value = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
 
-        if (!$force) {
+        if (!$force && is_string($value)) {
             $value = htmlentities($value, ENT_COMPAT, 'UTF-8');
         }
 
@@ -220,19 +230,66 @@ class Content implements Renderable
      * Append \Illuminate\View\View for content.
      *
      * @param string $view
-     * @param array  $data
      *
      * @return $this
      */
-    public function append($view, $data = [])
+    public function append($view)
     {
         if (!$view instanceof Renderable) {
-            $view = view($view, $data);
+            $view = view($view);
         }
 
         $this->add($view, true);
 
         return $this;
+    }
+
+    /**
+     * Build content.
+     *
+     * @return array
+     */
+    public function build()
+    {
+        $build = [];
+
+        foreach ($this->contents as $key => $item) {
+            if ($item instanceof Renderable) {
+                if (!$this->view && $this->layout) {
+                    if ($item == $this->layout) {
+                        array_push($build, $this->layout);
+                        $layout = count($build) - 1;
+                    } else {
+                        if ('admin::partials.push' == $item->name()) {
+                            $build[$layout]->with([$item]);
+                        } else {
+                            array_push($build, $item);
+                        }
+                    }
+                    continue;
+                }
+                $item->with($this->shiftData($item->name()));
+            } elseif ($item instanceof Blade) {
+                $render = view($item->slug, $this->shiftData($item->slug));
+
+                if (!empty($type = $item->pivot->type) && $this->layout) {
+                    $this->layout->with([$this->getPush($type, $render)]);
+                    continue;
+                }
+                $item = $render;
+
+            } elseif ($item instanceof Asset) {
+                if (!empty($type = $item->pivot->type) && $this->layout) {
+                    $this->layout->with([$this->getPush($type, $item->asset)]);
+                    continue;
+                }
+                $item = $item->asset;
+            }
+
+            array_push($build, $item);
+        }
+
+        return $build;
     }
 
     /**
@@ -242,36 +299,18 @@ class Content implements Renderable
      */
     public function render()
     {
+        $build = $this->build();
+
         ob_start();
 
-        if ($this->layout) {
-            foreach ($this->contents as $key => $content) {
-                if ($content instanceof Renderable) {
-                    $this->layout->with($key, $content);
-                    unset($this->contents[$key]);
-                }
+        foreach ($build as $content) {
+            if ($content instanceof Renderable) {
+                echo $content->render();
+            } elseif ($content instanceof Closure) {
+                $content();
+            } else {
+                echo (string) $content;
             }
-
-            echo $this->layout->render();
-
-            foreach ($this->contents as $content) {
-                if ($content instanceof Closure) {
-                    $content();
-                } else {
-                    echo (string) $content;
-                }
-            }
-        } else {
-            foreach ($this->contents as $content) {
-                if ($content instanceof Renderable) {
-                    echo $content->render();
-                } elseif ($content instanceof Closure) {
-                    $content();
-                } else {
-                    echo (string) $content;
-                }
-            }
-
         }
 
         $contents = ob_get_contents();
