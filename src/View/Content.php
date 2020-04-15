@@ -58,37 +58,17 @@ class Content implements Renderable
      *
      * @return $this
      */
-    public function push($push, $data)
+    public function push($push, $data = [])
     {
+        if (is_array($push)) {
+            foreach ($push as $key => $value) {
+                call_user_func([$this, 'push'], $key, $value);
+            }
+
+            return $this;
+        }
+
         $this->append('admin::partials.push', ['key' => $push, 'value' => $data]);
-
-        return $this;
-    }
-
-    /**
-     * Content style.
-     *
-     * @param string $styles
-     *
-     * @return $this
-     */
-    public function style(...$styles)
-    {
-        $this->push('style', $styles);
-
-        return $this;
-    }
-
-    /**
-     * Content script.
-     *
-     * @param string $scripts
-     *
-     * @return $this
-     */
-    public function script(...$scripts)
-    {
-        $this->push('script', $scripts);
 
         return $this;
     }
@@ -120,7 +100,7 @@ class Content implements Renderable
         $get = View::where('slug', $view)->get()->first();
 
         if (!$get) {
-            throw new \InvalidArgumentException("Invalid view [$view].");
+            throw new \InvalidArgumentException("View [{$view}] not found.");
         }
 
         $this->view = $get;
@@ -133,14 +113,18 @@ class Content implements Renderable
      *
      * @return $this
      */
-    public function pushAssets()
+    protected function pushAssets()
     {
         $assets = $this->view->allAssets()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
         });
 
         foreach ($assets as $asset) {
-            $this->push($asset->pivot->type, $asset->asset);
+            if (empty($type = $asset->pivot->type)) {
+                $this->add($asset->asset, true);
+            } else {
+                $this->push($type, $asset->asset);
+            }
         }
 
         return $this;
@@ -153,7 +137,7 @@ class Content implements Renderable
      *
      * @return $this
      */
-    public function pushBlades($data = [])
+    protected function pushBlades($data = [])
     {
         $blades = $this->view->isNotLayout()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
@@ -173,7 +157,13 @@ class Content implements Renderable
                 });
             }
 
-            $this->push($blade->pivot->type, view($slug, $shift ?? [])->render());
+            $view = view($slug, $shift ?? []);
+
+            if (empty($type = $blade->pivot->type)) {
+                $this->append($view);
+            } else {
+                $this->push($type, $view->render());
+            }
         }
 
         return $this;
@@ -204,26 +194,30 @@ class Content implements Renderable
     }
 
     /**
-     * Prepend content for content body.
+     * Add value to content.
      *
-     * @param string $view
-     * @param array  $data
+     * @param mixed $value
+     * @param bool  $force
      *
      * @return $this
      */
-    public function prepend($view, $data = [])
+    public function add($value, $force = false)
     {
-        if (!$view instanceof Renderable) {
-            $view = view($view, $data);
+        if (is_array($value)) {
+            $value = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         }
 
-        array_unshift($this->contents, $view);
+        if (!$force) {
+            $value = htmlentities($value, ENT_COMPAT, 'UTF-8');
+        }
+
+        array_push($this->contents, $value);
 
         return $this;
     }
 
     /**
-     * Append content for content body.
+     * Append \Illuminate\View\View for content.
      *
      * @param string $view
      * @param array  $data
@@ -236,7 +230,7 @@ class Content implements Renderable
             $view = view($view, $data);
         }
 
-        array_push($this->contents, $view);
+        $this->add($view, true);
 
         return $this;
     }
@@ -248,24 +242,36 @@ class Content implements Renderable
      */
     public function render()
     {
-        if ($this->layout) {
-            foreach ($this->contents as $key => $content) {
-                $this->layout->with($key, $content);
-            }
-
-            $this->prepend($this->layout);
-        }
-
         ob_start();
 
-        foreach ($this->contents as $content) {
-            if ($content instanceof Renderable) {
-                echo $content->render();
-            } elseif ($content instanceof Closure) {
-                $content();
-            } else {
-                echo (string) $content;
+        if ($this->layout) {
+            foreach ($this->contents as $key => $content) {
+                if ($content instanceof Renderable) {
+                    $this->layout->with($key, $content);
+                    unset($this->contents[$key]);
+                }
             }
+
+            echo $this->layout->render();
+
+            foreach ($this->contents as $content) {
+                if ($content instanceof Closure) {
+                    $content();
+                } else {
+                    echo (string) $content;
+                }
+            }
+        } else {
+            foreach ($this->contents as $content) {
+                if ($content instanceof Renderable) {
+                    echo $content->render();
+                } elseif ($content instanceof Closure) {
+                    $content();
+                } else {
+                    echo (string) $content;
+                }
+            }
+
         }
 
         $contents = ob_get_contents();

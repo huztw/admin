@@ -37,7 +37,7 @@ class AuthController extends Controller
             return redirect($this->redirectPath());
         }
 
-        return view($this->loginView, ['_title_' => trans("admin.login")]);
+        return view($this->loginView);
     }
 
     /**
@@ -221,7 +221,7 @@ class AuthController extends Controller
      */
     public function showRegistrationForm()
     {
-        return view($this->registerView, ['_title_' => trans("admin.register")]);
+        return view($this->registerView);
     }
 
     /**

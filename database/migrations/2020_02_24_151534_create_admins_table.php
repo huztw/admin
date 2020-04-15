@@ -124,7 +124,7 @@ class CreateAdminsTable extends Migration
             $table->integer('view_id')->unsigned();
             $table->integer('blade_id')->unsigned();
             $table->primary(['view_id', 'blade_id'])->index();
-            $table->string('type', 50);
+            $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
         });
@@ -133,7 +133,7 @@ class CreateAdminsTable extends Migration
             $table->integer('view_id')->unsigned();
             $table->integer('asset_id')->unsigned();
             $table->primary(['view_id', 'asset_id'])->index();
-            $table->string('type', 50);
+            $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
         });
@@ -142,7 +142,7 @@ class CreateAdminsTable extends Migration
             $table->integer('blade_id')->unsigned();
             $table->integer('asset_id')->unsigned();
             $table->primary(['blade_id', 'asset_id', 'type', 'sort'])->index();
-            $table->string('type', 50);
+            $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
         });

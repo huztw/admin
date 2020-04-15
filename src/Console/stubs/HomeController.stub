@@ -10,10 +10,11 @@ class HomeController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->layout('admin::layouts.admin', ['_title_' => trans("admin.home")])
+            ->layout('admin::layouts.admin')
             ->append('admin::index')
-            ->style('<link href="' . admin_asset('vendor/huztw-admin/css/admin.css') . '" rel="stylesheet">')
-            ->script('<script src="' . admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') . '"></script>')
-            ->script('<script src="' . admin_asset('vendor/huztw-admin/js/admin.js') . '"></script>');
+            ->push('title', trans("admin.home"))
+            ->push('style', '<link href="' . admin_asset('vendor/huztw-admin/css/admin.css') . '" rel="stylesheet">')
+            ->push('script', '<script src="' . admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') . '"></script>')
+            ->push('script', '<script src="' . admin_asset('vendor/huztw-admin/js/admin.js') . '"></script>');
     }
 }

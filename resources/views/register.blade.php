@@ -1,4 +1,6 @@
-@extends('admin::layouts.admin')
+@extends('layouts.admin')
+
+@push('title'){{ trans("admin.register") }}@endpush
 
 @push('style')
     <!-- Styles -->
