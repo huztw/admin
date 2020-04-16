@@ -11,7 +11,7 @@ class HomeController extends Controller
     {
         return $content
             ->layout('admin::layouts.admin')
-            ->append('admin::index')
+            ->push('content', 'admin::index', [])
             ->push('title', trans("admin.home"))
             ->push('style', '<link href="' . admin_asset('vendor/huztw-admin/css/admin.css') . '" rel="stylesheet">')
             ->push('script', '<script src="' . admin_asset('vendor/huztw-admin/jQuery/jquery-3.4.1.min.js') . '"></script>')
