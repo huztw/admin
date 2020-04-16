@@ -7,6 +7,7 @@ use Huztw\Admin\Database\Layout\Asset;
 use Huztw\Admin\Database\Layout\Blade;
 use Huztw\Admin\Database\Layout\View;
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Support\Arr;
 
 class Content implements Renderable
 {
@@ -103,16 +104,26 @@ class Content implements Renderable
     /**
      * Content datas.
      *
+     * @param string|array $view
      * @param array $datas
      *
      * @return $this
      */
-    public function data($datas)
+    public function data($view, ...$datas)
     {
-        $this->datas = $datas;
+        if (count($datas) == 0) {
+            array_push($this->datas, $view);
+        } else {
+            foreach ($datas as $data) {
+                if (isset($this->datas[$view])) {
+                    array_push($this->datas[$view], $data);
+                } else {
+                    $this->datas[$view] = [$data];
+                }
+            }
+        }
 
         return $this;
-
     }
 
     /**
@@ -124,10 +135,12 @@ class Content implements Renderable
      */
     protected function shiftData($key)
     {
-        $data = [];
+        $data = Arr::collapse(Arr::where($this->datas, function ($value, $key) {
+            return is_int($key);
+        }));
 
         if (isset($this->datas[$key])) {
-            $data = array_shift($this->datas[$key]);
+            $data = array_merge($data, array_shift($this->datas[$key]) ?? []);
         }
 
         return $data;
@@ -297,7 +310,6 @@ class Content implements Renderable
                     continue;
                 }
                 $item = $render;
-
             } elseif ($item instanceof Asset) {
                 if (!empty($type = $item->pivot->type) && $this->layout) {
                     $this->layout->with([$this->getPush($type, $item->asset)]);
