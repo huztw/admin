@@ -3,8 +3,6 @@
 namespace Huztw\Admin\View;
 
 use Closure;
-use Huztw\Admin\Database\Layout\Asset;
-use Huztw\Admin\Database\Layout\Blade;
 use Huztw\Admin\Database\Layout\View;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Support\Arr;
@@ -25,7 +23,12 @@ class Content implements Renderable
     /**
      * @var array
      */
-    protected $contents = [];
+    protected $build = [];
+
+    /**
+     * @var array
+     */
+    protected $push = [];
 
     /**
      * @var array
@@ -57,52 +60,47 @@ class Content implements Renderable
     }
 
     /**
-     * Get push format.
+     * Compile with push.
      *
-     * @param string $push
-     * @param mixed $data
-     *
-     * @return \Illuminate\View\View
+     * @return void
      */
-    protected function getPush($push, $data = [])
+    protected function withPush()
     {
-        return view('admin::partials.push', ['key' => $push, 'value' => $data]);
+        if ($this->layout) {
+            $this->layout->with(array_map(function ($item) {
+                $push = key($item);
+                $data = current($item);
+
+                if ($data instanceof Renderable) {
+                    $data->with($this->shiftData($data->name()));
+                }
+
+                return view('admin::partials.push', ['key' => $push, 'value' => $data]);
+            }, $this->push));
+        } elseif (count($this->push) > 0) {
+            throw new \InvalidArgumentException("Layout [{$this->layout}] not found.");
+        }
     }
 
     /**
      * Push to content.
      *
      * @param string $push
-     * @param mixed $data
-     * @param array|null $viewData
+     * @param mixed $datas
      *
      * @return $this
      */
-    public function push($push, $data = [], $viewData = null)
+    public function push($push, ...$datas)
     {
-        if (is_array($push)) {
-            foreach ($push as $key => $value) {
-                call_user_func([$this, 'push'], $key, $value, $viewData);
-            }
-
-            return $this;
+        foreach ($datas as $data) {
+            array_push($this->push, [$push => $data]);
         }
-
-        if ($viewData !== null) {
-            if (!$data instanceof Renderable) {
-                $data = view($data, $viewData);
-            } else {
-                $data->with($viewData);
-            }
-        }
-
-        $this->add($this->getPush($push, $data), true);
 
         return $this;
     }
 
     /**
-     * Content datas.
+     * Datas for content.
      *
      * @param string|array $view
      * @param array $datas
@@ -127,7 +125,7 @@ class Content implements Renderable
     }
 
     /**
-     * Shift content datas.
+     * Shift content's datas.
      *
      * @param string $key
      *
@@ -147,7 +145,7 @@ class Content implements Renderable
     }
 
     /**
-     * Content layout.
+     * Layout for content.
      *
      * @param string $layout
      * @param array|null $data
@@ -184,31 +182,39 @@ class Content implements Renderable
     }
 
     /**
-     * Push Content assets.
+     * Push assets for content.
      */
     protected function pushAssets()
     {
         $this->view->allAssets()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
         })->each(function ($item, $key) {
-            $this->add($item, true);
+            if (!empty($type = $item->pivot->type) && $this->layout) {
+                $this->push($type, $item->asset);
+            } else {
+                $this->add($item->asset, true);
+            }
         });
     }
 
     /**
-     * Push Content blades.
+     * Push blades for content.
      */
     protected function pushBlades()
     {
         $this->view->isNotLayout()->sortBy(function ($item, $key) {
             return $item->pivot->sort;
         })->each(function ($item, $key) {
-            $this->add($item, true);
+            if (!empty($type = $item->pivot->type) && $this->layout) {
+                $this->push($type, view($item->slug));
+            } else {
+                $this->add(view($item->slug), true);
+            }
         });
     }
 
     /**
-     * Append view to content.
+     * Build view for content.
      *
      * @param string $view
      *
@@ -247,7 +253,7 @@ class Content implements Renderable
             $value = htmlentities($value, ENT_COMPAT, 'UTF-8');
         }
 
-        array_push($this->contents, $value);
+        array_push($this->build, $value);
 
         return $this;
     }
@@ -274,54 +280,19 @@ class Content implements Renderable
     /**
      * Build content.
      *
-     * @return array
+     * @return void
      */
     public function build()
     {
-        $build = [];
+        $this->withPush();
 
-        foreach ($this->contents as $key => $item) {
+        $this->build = array_map(function ($item) {
             if ($item instanceof Renderable) {
-                if (!$this->view && $this->layout) {
-                    if ($item == $this->layout) {
-                        $layout = count($build);
-                        $item   = $this->layout->with($this->shiftData($this->layout->name()));
-                    } else {
-                        if ('admin::partials.push' == $item->name()) {
-                            foreach ($item->getData() as $value) {
-                                if ($value instanceof Renderable) {
-                                    $value->with($this->shiftData($value->name()));
-                                }
-                            }
-                            $build[$layout]->with([$item]);
-                            continue;
-                        } else {
-                            $item->with($this->shiftData($item->name()));
-                        }
-                    }
-                } else {
-                    $item->with($this->shiftData($item->name()));
-                }
-            } elseif ($item instanceof Blade) {
-                $render = view($item->slug, $this->shiftData($item->slug));
-
-                if (!empty($type = $item->pivot->type) && $this->layout) {
-                    $this->layout->with([$this->getPush($type, $render)]);
-                    continue;
-                }
-                $item = $render;
-            } elseif ($item instanceof Asset) {
-                if (!empty($type = $item->pivot->type) && $this->layout) {
-                    $this->layout->with([$this->getPush($type, $item->asset)]);
-                    continue;
-                }
-                $item = $item->asset;
+                $item->with($this->shiftData($item->name()));
             }
 
-            array_push($build, $item);
-        }
-
-        return $build;
+            return $item;
+        }, $this->build);
     }
 
     /**
@@ -331,11 +302,11 @@ class Content implements Renderable
      */
     public function render()
     {
-        $build = $this->build();
+        $this->build();
 
         ob_start();
 
-        foreach ($build as $content) {
+        foreach ($this->build as $content) {
             if ($content instanceof Renderable) {
                 echo $content->render();
             } elseif ($content instanceof Closure) {

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin::layouts.admin')
 
 @push('title'){{ trans("admin.login") }}@endpush
 

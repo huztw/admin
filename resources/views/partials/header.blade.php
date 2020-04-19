@@ -14,9 +14,11 @@
                     <ul class="navbar-nav ml-auto">
                         <!-- Authentication Links -->
 @if (!Admin::guard()->check())
+@if (!request()->is('admin/login'))
                         <li class="nav-item">
                             <a class="nav-link" href="{{ admin_url('login') }}">{{ trans('admin.login') }}</a>
                         </li>
+@endif
 @else
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin::layouts.admin')
 
 @push('title'){{ trans("admin.register") }}@endpush
 
@@ -14,9 +14,6 @@
 @endpush
 
 @push('content')
-
-    @include('admin::partials.header')
-
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-8">
@@ -90,7 +87,4 @@
             </div>
         </div>
     </div>
-
-    @include('admin::partials.footer')
-
 @endpush

@@ -1,3 +1,1 @@
-        @include('admin::partials.header')
-
-        @include('admin::partials.footer')
+<h1>Home Page</h1>

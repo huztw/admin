@@ -7,9 +7,12 @@
         <title>@stack('title', 'title')</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-@stack('style')@stack('script')
+@stack('style')
+@stack('script')
     </head>
-    <body>        
+    <body>
+@include('admin::partials.header')
 @stack('content')
+@include('admin::partials.footer')
     </body>
 </html>
