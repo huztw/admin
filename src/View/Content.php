@@ -67,6 +67,8 @@ class Content implements Renderable
     protected function withPush()
     {
         if ($this->layout) {
+            $this->layout->with($this->shiftData($this->layout->name()));
+
             $this->layout->with(array_map(function ($item) {
                 $push = key($item);
                 $data = current($item);
@@ -148,13 +150,17 @@ class Content implements Renderable
      * Layout for content.
      *
      * @param string $layout
-     * @param array|null $data
+     * @param array $data
      *
      * @return $this
      */
-    public function layout($layout, $data = null)
+    public function layout($layout, $data = [])
     {
-        $this->layout = view($layout, $data ?? $this->shiftData($layout));
+        if (!$layout instanceof Renderable) {
+            $layout = view($layout, $data);
+        }
+
+        $this->layout = $layout;
 
         $this->add($this->layout, true);
 

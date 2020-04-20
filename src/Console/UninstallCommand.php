@@ -71,6 +71,6 @@ class UninstallCommand extends Command
 
         $this->deleteDir(resource_path('views/errors/admin'));
 
-        $this->deleteDir(resource_path('views/layouts'));
+        $this->deleteFile(resource_path('views/layouts/admin.blade.php'));
     }
 }
