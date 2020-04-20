@@ -38,9 +38,9 @@ class Permission extends Model
     }
 
     /**
-     * Permission belongs to many roles.
+     * A permission belongs to many roles.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Role
      */
     public function roles()
     {
@@ -52,9 +52,9 @@ class Permission extends Model
     }
 
     /**
-     * Permission belongs to many routes.
+     * A permission belongs to many routes.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Route
      */
     public function routes()
     {
@@ -66,9 +66,9 @@ class Permission extends Model
     }
 
     /**
-     * Permission belongs to many actions.
+     * A permission belongs to many actions.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Action
      */
     public function actions()
     {

@@ -35,9 +35,19 @@ class View extends Model
     }
 
     /**
+     * A view belongs to a layout.
+     *
+     * @return \Huztw\Admin\Database\Layout\Blade
+     */
+    public function layout()
+    {
+        return $this->belongsTo(config('admin.database.blades_model'), 'blade_id', 'id');
+    }
+
+    /**
      * A view belongs to many blades.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\Blade
      */
     public function blades()
     {
@@ -52,7 +62,7 @@ class View extends Model
     /**
      * A view belongs to many assets.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\Asset
      */
     public function assets()
     {
@@ -69,33 +79,13 @@ class View extends Model
      *
      * @return object
      */
-    public function isLayout()
-    {
-        return $this->blades->filter(function ($item, $key) {
-            return 'layout' == $item->pivot->type;
-        });
-    }
-
-    /**
-     * Get all assets for view.
-     *
-     * @return object
-     */
-    public function isNotLayout()
-    {
-        return $this->blades->filter(function ($item, $key) {
-            return 'layout' != $item->pivot->type;
-        });
-    }
-
-    /**
-     * Get all assets for view.
-     *
-     * @return object
-     */
     public function allAssets()
     {
-        return $this->blades()->with('assets')->get()->pluck('assets')->flatten()->merge($this->assets);
+        if ($this->layout) {
+            $layout = $this->layout->assets->all();
+        }
+
+        return collect($layout ?? [])->merge($this->blades()->with('assets')->get()->pluck('assets')->flatten()->merge($this->assets));
     }
 
     /**

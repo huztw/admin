@@ -7,6 +7,7 @@ use Huztw\Admin\Database\Auth\Permission;
 use Huztw\Admin\Database\Auth\Role;
 use Huztw\Admin\Database\Auth\Route;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class AdminSeeder extends Seeder
@@ -24,7 +25,10 @@ class AdminSeeder extends Seeder
         ]);
 
         // create a user.
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Administrator::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         Administrator::create([
             'username' => 'admin',
             'password' => Hash::make('admin'),
@@ -32,7 +36,10 @@ class AdminSeeder extends Seeder
         ]);
 
         // create a role.
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         Role::truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+
         Role::create([
             'name' => 'Administrator',
             'slug' => config('admin.administrator'),

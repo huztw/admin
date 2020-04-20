@@ -3,7 +3,7 @@
     "description": "laravel admin",
     "type": "library",
     "license": "MIT",
-    "version": "v1.2.9",
+    "version": "v1.3.0",
     "authors": [{
         "name": "noob1118",
         "email": "c0s0c0z0@gmail.com"
@@ -11,15 +11,13 @@
     "homepage": "https://github.com/huztw/admin",
     "keywords": ["Laravel", "Admin"],
     "require": {
-        "php": ">=7.0.0",
-        "laravel/framework": ">=5.5",
-        "laravel/ui": ">=2.0"
+        "php": "^7.2.5",
+        "laravel/framework": "^7.0",
+        "laravel/ui": "^2.0"
     },
     "require-dev": {
-        "laravel/laravel": ">=5.5",
-        "fzaninotto/faker": "~1.4",
-        "intervention/image": "~2.3",
-        "laravel/browser-kit-testing": "^6.0"
+        "laravel/laravel": "^7.0",
+        "fzaninotto/faker": "^1.9.1"
     },
     "autoload": {
         "psr-4": {

@@ -54,9 +54,9 @@ class Route extends Model
     }
 
     /**
-     * Route belongs to many permissions.
+     * A route belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Permission
      */
     public function permissions()
     {
@@ -218,7 +218,7 @@ class Route extends Model
     /**
      * Get route.
      *
-     * @return \Illuminate\Support\Facades\Route
+     * @return \Illuminate\Routing\RouteCollection
      */
     public static function getRoutes()
     {

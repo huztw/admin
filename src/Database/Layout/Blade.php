@@ -37,7 +37,7 @@ class Blade extends Model
     /**
      * A blade belongs to many views.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\View
      */
     public function views()
     {
@@ -51,7 +51,7 @@ class Blade extends Model
     /**
      * A blade belongs to many assets.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\Asset
      */
     public function assets()
     {

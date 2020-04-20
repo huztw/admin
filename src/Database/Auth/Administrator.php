@@ -31,9 +31,9 @@ class Administrator extends Authorizable
     }
 
     /**
-     * A user has and belongs to many roles.
+     * A user belongs to many roles.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Role
      */
     public function roles()
     {
@@ -45,9 +45,9 @@ class Administrator extends Authorizable
     }
 
     /**
-     * A User has and belongs to many permissions.
+     * A user belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Permission
      */
     public function permissions()
     {
@@ -91,7 +91,6 @@ class Administrator extends Authorizable
     {
         static::deleting(function ($model) {
             $model->roles()->detach();
-
             $model->permissions()->detach();
         });
     }

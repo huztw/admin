@@ -44,9 +44,9 @@ class Action extends Model
     }
 
     /**
-     * A role belongs to many permissions.
+     * A action belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Permission
      */
     public function permissions()
     {

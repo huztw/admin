@@ -27,7 +27,7 @@ class Role extends Model
     /**
      * A role belongs to many users.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Administrator
      */
     public function administrators()
     {
@@ -41,7 +41,7 @@ class Role extends Model
     /**
      * A role belongs to many permissions.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Auth\Permission
      */
     public function permissions()
     {
@@ -50,20 +50,6 @@ class Role extends Model
         $relatedModel = config('admin.database.permissions_model');
 
         return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'permission_id')->withTimestamps();
-    }
-
-    /**
-     * A role belongs to many menus.
-     *
-     * @return BelongsToMany
-     */
-    public function menus()
-    {
-        $pivotTable = config('admin.database.role_menu_table');
-
-        $relatedModel = config('admin.database.menu_model');
-
-        return $this->belongsToMany($relatedModel, $pivotTable, 'role_id', 'menu_id')->withTimestamps();
     }
 
     /**
@@ -101,7 +87,6 @@ class Role extends Model
 
         static::deleting(function ($model) {
             $model->administrators()->detach();
-
             $model->permissions()->detach();
         });
     }

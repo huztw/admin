@@ -202,7 +202,7 @@ class Content implements Renderable
      */
     protected function pushBlades()
     {
-        $this->view->isNotLayout()->sortBy(function ($item, $key) {
+        $this->view->blades->sortBy(function ($item, $key) {
             return $item->pivot->sort;
         })->each(function ($item, $key) {
             if (!empty($type = $item->pivot->type) && $this->layout) {
@@ -224,7 +224,7 @@ class Content implements Renderable
     {
         $this->find($view);
 
-        if ($layout = $this->view->isLayout()->first()) {
+        if ($layout = $this->view->layout) {
             $this->layout($layout->slug);
         }
 

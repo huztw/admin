@@ -37,7 +37,7 @@ class Asset extends Model
     /**
      * A asset belongs to many views.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\View
      */
     public function views()
     {
@@ -51,7 +51,7 @@ class Asset extends Model
     /**
      * A asset belongs to many blades.
      *
-     * @return BelongsToMany
+     * @return \Huztw\Admin\Database\Layout\Blade
      */
     public function blades()
     {
