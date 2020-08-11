@@ -18,7 +18,7 @@ class Admin
      *
      * @var string
      */
-    const VERSION = '1.4.0';
+    const VERSION = '1.4.1';
 
     /**
      * The Admin path.
