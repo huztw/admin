@@ -82,7 +82,7 @@ class ViewSeeder extends Seeder
         $origins = $this->originData();
 
         foreach (array_diff($views, $origins) as $name => $view) {
-            $name = is_int($name) ? null : $name;
+            $name = is_int($name) ? $view : $name;
             $this->setItems(['view' => $view, 'name' => $name]);
         }
 
@@ -96,7 +96,7 @@ class ViewSeeder extends Seeder
             });
 
             $name = key($filter);
-            $name = is_int($name) ? null : $name;
+            $name = is_int($name) ? $view : $name;
 
             View::find($id)->update(['name' => $name]);
         }

@@ -108,7 +108,7 @@ class BladeSeeder extends Seeder
         $origins = $this->originData();
 
         foreach (array_diff($blades, $origins) as $name => $blade) {
-            $name = is_int($name) ? null : $name;
+            $name = is_int($name) ? $blade : $name;
             $this->setItems(['blade' => $blade, 'name' => $name]);
         }
 
@@ -122,7 +122,7 @@ class BladeSeeder extends Seeder
             });
 
             $name = key($filter);
-            $name = is_int($name) ? null : $name;
+            $name = is_int($name) ? $blade : $name;
 
             Blade::find($id)->update(['name' => $name]);
         }
