@@ -44,9 +44,9 @@ class ViewCommand extends Command
             $assets = $view->allAssets();
 
             $data = [
-                $view->slug,
-                implode("\n", $blades->pluck('slug')->toArray()),
-                implode("\n", $assets->pluck('slug')->toArray()),
+                $view->view,
+                implode("\n", $blades->pluck('blade')->toArray()),
+                implode("\n", $assets->pluck('asset')->toArray()),
             ];
 
             array_push($list, $data);

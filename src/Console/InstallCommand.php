@@ -2,7 +2,7 @@
 
 namespace Huztw\Admin\Console;
 
-use Huztw\Admin\Database\Seeder\AdminSeeder;
+use Huztw\Admin\Database\Seeds\AdminSeeder;
 
 class InstallCommand extends Command
 {

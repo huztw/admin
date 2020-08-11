@@ -48,14 +48,14 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Application Default
+    | Application Default User's Group
     |--------------------------------------------------------------------------
     |
     | This value is the default for application.
     |
      */
 
-    'default'                   => 'admin',
+    'group'                     => 'admin',
 
     /*
     |--------------------------------------------------------------------------
@@ -113,7 +113,7 @@ return [
     | Administrator
     |--------------------------------------------------------------------------
     |
-    | Which role's slug has all permission
+    | Which role has all permission
     |
      */
     'administrator'             => 'administrator',

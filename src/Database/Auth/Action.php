@@ -3,10 +3,11 @@
 namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Action extends Model
 {
-    protected $fillable = ['name', 'slug', 'visibility'];
+    protected $fillable = ['action', 'name', 'visibility'];
 
     /**
      * @var array
@@ -15,6 +16,15 @@ class Action extends Model
         'public'    => 'public',
         'protected' => 'protected',
         'private'   => 'private',
+    ];
+
+    /**
+     * The model's attributes.
+     *
+     * @var array
+     */
+    protected $attributes = [
+        'visibility' => 'protected',
     ];
 
     /**
@@ -90,33 +100,33 @@ class Action extends Model
     /**
      * Determine if the action can pass through.
      *
-     * @param string|null $slug
+     * @param string|array|null $actions
      *
      * @return bool
      */
-    public function can($slug = null): bool
+    public function can($actions): bool
     {
-        if (empty($slug)) {
-            return true;
+        if (is_array($actions)) {
+            $reject = collect($actions)->map(function ($action, $key) {
+                return $this->can($action);
+            })->reject()->count();
+
+            return ($reject == 0) ? true : false;
         }
 
-        if ($slug == $this->slug) {
-            return true;
-        }
-
-        return false;
+        return Str::is($actions, $this->action) || Str::is($this->action, $actions);
     }
 
     /**
      * Determine if the action can not pass.
      *
-     * @param string|null $slug
+     * @param string|array|null $actions
      *
      * @return bool
      */
-    public function cannot($slug = null): bool
+    public function cannot($actions): bool
     {
-        return !$this->can($slug);
+        return !$this->can($actions);
     }
 
     /**

@@ -56,7 +56,7 @@ class Permission extends Checker
                 $exception = new HttpException($code, $this->httpStatusMessage($code));
             }
 
-            $view = 'errors.' . $this->user_slug . '.' . $code;
+            $view = 'errors.' . $this->group . '.' . $code;
 
             if (View::exists($view)) {
                 return response()->view($view, ['exception' => $exception], $code);

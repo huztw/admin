@@ -35,7 +35,7 @@ return [
     |
      */
     'actions'     => [
-        // 'slug' => 'name',
+        // 'name',
     ],
 
     /*
@@ -45,12 +45,12 @@ return [
     |
      */
     'permissions' => [
-        '*'               => 'All permission',
-        'dashboard'       => 'Dashboard',
-        'auth.login'      => 'Login',
-        'auth.register'   => 'Register',
-        'auth.setting'    => 'User setting',
-        'auth.management' => 'Auth management',
+        '*',
+        'dashboard',
+        'auth.login',
+        'auth.register',
+        'auth.setting',
+        'auth.management',
     ],
 
     /*
@@ -60,7 +60,7 @@ return [
     |
      */
     'views'       => [
-        // 'slug' => 'name',
+        // 'name' => 'view',
     ],
 
     /*
@@ -70,9 +70,9 @@ return [
     |
      */
     'blades'      => [
-        'admin::index'    => 'Admin Home',
-        'admin::login'    => 'Admin Login',
-        'admin::register' => 'Admin Register',
+        'Admin Home'     => 'admin::index',
+        'Admin Login'    => 'admin::login',
+        'Admin Register' => 'admin::register',
     ],
 
     /*
@@ -82,8 +82,6 @@ return [
     |
      */
     'assets'      => [
-        // 'slug' => [
-        //     'name' => 'asset',
-        // ],
+        // 'name' => 'asset',
     ],
 ];

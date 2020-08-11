@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Blade extends Model
 {
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['name', 'blade'];
 
     /**
      * Create a new Eloquent model instance.

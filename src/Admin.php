@@ -6,6 +6,7 @@ use Huztw\Admin\Traits\Bootstraps;
 use Huztw\Admin\Traits\HasAssets;
 use Huztw\Admin\Traits\Routes;
 use Huztw\Admin\View\Content;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 class Admin
@@ -13,11 +14,68 @@ class Admin
     use Bootstraps, HasAssets, Routes;
 
     /**
-     * The Laravel admin version.
+     * The Admin version.
      *
      * @var string
      */
-    const VERSION = '1.3.2';
+    const VERSION = '1.4.0';
+
+    /**
+     * The Admin path.
+     *
+     * @var string
+     */
+    private static $PATH = __DIR__ . '/../';
+
+    /**
+     * Get the Admin application path.
+     *
+     * @param  string|array  $path
+     * @return string
+     */
+    public static function app_path($path = '')
+    {
+        if (!empty($path)) {
+            $path = Arr::wrap($path);
+
+            $path = implode(DIRECTORY_SEPARATOR, $path);
+        }
+
+        return realpath(self::$PATH . $path);
+    }
+
+    /**
+     * Get the Admin config path.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public static function config_path($path = '')
+    {
+        return self::app_path(['config', $path]);
+    }
+
+    /**
+     * Get the Admin database path.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public static function database_path($path = '')
+    {
+        return self::app_path(['database', $path]);
+    }
+
+    /**
+     * Get the Admin resources path.
+     *
+     * @param  string  $path
+     * @return string
+     */
+    public static function resource_path($path = '')
+    {
+        return self::app_path(['resources', $path]);
+    }
 
     /**
      * Returns the long version of Huztw-admin.

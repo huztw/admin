@@ -3,13 +3,14 @@
 namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Permission extends Model
 {
     /**
      * @var array
      */
-    protected $fillable = ['name', 'slug', 'permission', 'disable'];
+    protected $fillable = ['permission', 'name', 'disable'];
 
     /**
      * Create a new Eloquent model instance.
@@ -80,40 +81,6 @@ class Permission extends Model
     }
 
     /**
-     * @param $method
-     */
-    public function setHttpMethodAttribute($method)
-    {
-        if (is_array($method)) {
-            $this->attributes['http_method'] = implode(',', $method);
-        }
-    }
-
-    /**
-     * @param $method
-     *
-     * @return array
-     */
-    public function getHttpMethodAttribute($method)
-    {
-        if (is_string($method)) {
-            return array_filter(explode(',', $method));
-        }
-
-        return $method;
-    }
-
-    /**
-     * @param $get
-     *
-     * @return bool
-     */
-    public function getPermissionAttribute($get)
-    {
-        return boolval($get);
-    }
-
-    /**
      * @param $get
      *
      * @return bool
@@ -126,33 +93,33 @@ class Permission extends Model
     /**
      * Determine if the permission can pass through.
      *
-     * @param string|null $slug
+     * @param string|array|null $permissions
      *
      * @return bool
      */
-    public function can($slug = null): bool
+    public function can($permissions): bool
     {
-        if (empty($slug)) {
-            return true;
+        if (is_array($permissions)) {
+            $reject = collect($permissions)->map(function ($permission, $key) {
+                return $this->can($permission);
+            })->reject()->count();
+
+            return ($reject == 0) ? true : false;
         }
 
-        if ($slug == $this->slug) {
-            return true;
-        }
-
-        return false;
+        return Str::is($permissions, $this->permission) || Str::is($this->permission, $permissions);
     }
 
     /**
      * Determine if the permission can not pass.
      *
-     * @param string|null $slug
+     * @param string|array|null $permissions
      *
      * @return bool
      */
-    public function cannot($slug = null): bool
+    public function cannot($permissions): bool
     {
-        return !$this->can($slug);
+        return !$this->can($permissions);
     }
 
     /**

@@ -1,13 +1,14 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Layout\View;
+use Huztw\Admin\Database\Auth\Action;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class ViewSeeder extends Seeder
+class ActionSeeder extends Seeder
 {
     /**
      * @var array
@@ -30,14 +31,14 @@ class ViewSeeder extends Seeder
 
         $this->settings($settings);
 
-        $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
+        $this->items = collect($this->items)->sortBy('action')->values()->toArray();
 
         // insert to database.
-        View::insertOrIgnore($this->items);
+        Action::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = View::max('id') + 1;
-        DB::statement("ALTER TABLE " . View::table() . " AUTO_INCREMENT = " . $increments);
+        $increments = Action::max('id') + 1;
+        DB::statement("ALTER TABLE " . Action::table() . " AUTO_INCREMENT = " . $increments);
     }
 
     /**
@@ -51,7 +52,7 @@ class ViewSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['views'] ?? [];
+        return $settings['actions'] ?? [];
     }
 
     /**
@@ -73,55 +74,45 @@ class ViewSeeder extends Seeder
     /**
      * Start settings.
      *
-     * @param $settings
+     * @param $actions
      *
      * @return void
      */
-    protected function settings($settings)
+    protected function settings($actions)
     {
-        $slugs = [];
+        $origins = $this->originData();
 
-        foreach ($settings as $key => $value) {
-            if (is_int($key)) {
-                array_push($slugs, $value);
-            } else {
-                array_push($slugs, $key);
-            }
+        foreach (array_diff($actions, $origins) as $name => $action) {
+            $name = is_int($name) ? $action : $name;
+            $this->setItems(['action' => $action, 'name' => $name]);
         }
 
-        $origins = $this->originSlugs();
+        foreach (array_intersect($origins, $actions) as $id => $action) {
+            $filter = Arr::where($actions, function ($value, $key) use ($action) {
+                return $value == $action;
+            });
 
-        foreach (array_diff($slugs, $origins) as $slug) {
-            $this->setItems(['slug' => $slug, 'name' => $settings[$slug] ?? null]);
-        }
+            $name = key($filter);
+            $name = is_int($name) ? $action : $name;
 
-        foreach (array_diff($origins, $slugs) as $id => $slug) {
-            View::destroy($id);
-        }
-
-        foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = View::find($id);
-
-            $origin->name = $settings[$slug] ?? null;
-
-            $origin->save();
+            Action::find($id)->update(['name' => $name]);
         }
     }
 
     /**
-     * Get the original slugs.
+     * Get the original data.
      *
      * @return array
      */
-    protected function originSlugs()
+    protected function originData()
     {
-        $slugs = [];
+        $data = [];
 
-        foreach (View::get() as $item) {
-            $slugs[$item->id] = $item->slug;
+        foreach (Action::get() as $item) {
+            $data[$item->id] = $item->action;
         }
 
-        return $slugs;
+        return $data;
     }
 
     /**
@@ -134,8 +125,8 @@ class ViewSeeder extends Seeder
     protected function setItems($item)
     {
         array_push($this->items, [
+            'action'     => $item['action'],
             'name'       => $item['name'],
-            'slug'       => $item['slug'],
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

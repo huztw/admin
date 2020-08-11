@@ -11,12 +11,12 @@ class Content implements Renderable
 {
 
     /**
-     * @var string
+     * @var object|null
      */
     protected $view;
 
     /**
-     * @var string
+     * @var object
      */
     protected $layout;
 
@@ -176,7 +176,7 @@ class Content implements Renderable
      */
     public function find($view)
     {
-        $get = View::where('slug', $view)->get()->first();
+        $get = View::where('view', '=', $view)->first();
 
         if (!$get) {
             throw new \InvalidArgumentException("View [{$view}] not found.");
@@ -211,10 +211,12 @@ class Content implements Renderable
         $this->view->blades->sortBy(function ($item, $key) {
             return $item->pivot->sort;
         })->each(function ($item, $key) {
+            $blade = view($item->blade);
+
             if (!empty($type = $item->pivot->type) && $this->layout) {
-                $this->push($type, view($item->slug));
+                $this->push($type, $blade);
             } else {
-                $this->add(view($item->slug), true);
+                $this->add($blade, true);
             }
         });
     }
@@ -231,7 +233,7 @@ class Content implements Renderable
         $this->find($view);
 
         if ($layout = $this->view->layout) {
-            $this->layout($layout->slug);
+            $this->layout($layout->blade);
         }
 
         $this->pushBlades();

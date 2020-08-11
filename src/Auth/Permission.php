@@ -6,6 +6,7 @@ use Closure;
 use Huztw\Admin\Database\Auth\Action;
 use Huztw\Admin\Database\Auth\Permission as PermissionDB;
 use Huztw\Admin\Database\Auth\Route;
+use Illuminate\Support\Str;
 
 class Permission
 {
@@ -17,17 +18,12 @@ class Permission
     /**
      * @var string
      */
-    protected $user_slug;
-
-    /**
-     * @var array
-     */
-    protected $items = [];
+    protected $group;
 
     /**
      * @var string
      */
-    protected $items_slug;
+    protected $checker;
 
     /**
      * Permission constructor.
@@ -46,65 +42,35 @@ class Permission
     }
 
     /**
+     * @param string $method
+     * @param mixed $arguments
+     *
+     * @return $this
+     */
+    public function __call($method, $arguments)
+    {
+        $this->checker = $method;
+
+        return $this;
+    }
+
+    /**
      * Used by Collection.
      *
      * @return \Illuminate\Support\Collection
      */
     public function get()
     {
-        return collect($this->items);
-    }
-
-    /**
-     * Get user's permissions.
-     *
-     * @return \Huztw\Admin\Auth\Permission
-     */
-    public function permission()
-    {
-        $this->items_slug = 'permission';
-
-        if ($this->user::user()) {
-            $this->items = $this->user::user()->allPermissions()->all();
+        if ($user = $this->user::user()) {
+            $all = 'all' . ucfirst(Str::plural($this->checker));
+            return $user->$all()->all();
         }
 
-        return $this;
+        return collect([]);
     }
 
     /**
-     * Get user's routes.
-     *
-     * @return \Huztw\Admin\Auth\Permission
-     */
-    public function route()
-    {
-        $this->items_slug = 'route';
-
-        if ($this->user::user()) {
-            $this->items = $this->user::user()->allRoutes()->all();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get user's actions.
-     *
-     * @return \Huztw\Admin\Auth\Permission
-     */
-    public function action()
-    {
-        $this->items_slug = 'action';
-
-        if ($this->user::user()) {
-            $this->items = $this->user::user()->allActions()->all();
-        }
-
-        return $this;
-    }
-
-    /**
-     * Check.
+     * Determine if the check should pass through.
      *
      * @param string|array|null $args
      * @param callback|null $callback
@@ -113,48 +79,43 @@ class Permission
      */
     public function check($args = null, callable $callback = null)
     {
-        if ($this->items_slug === null) {
-            throw new \InvalidArgumentException("Invalid check with [$this->items_slug].");
+        if ($this->checker === null) {
+            throw new \InvalidArgumentException("Invalid check with [$this->checker].");
         }
 
-        $method = "shouldPassThrough" . ucfirst($this->items_slug);
+        $method = "shouldPassThrough" . ucfirst($this->checker);
 
         if (!method_exists($this, $method)) {
-            throw new \InvalidArgumentException("The [$this->items_slug] check method does not exist.");
+            throw new \InvalidArgumentException("The [$this->checker] check method does not exist.");
         }
 
         $args = !empty($args) ? (is_array($args) ? $args : [$args]) : [null];
 
-        $check = true;
+        $reject = collect($args)->reject(function ($arg) use ($method) {
+            return call_user_func([$this, $method], $arg);
+        })->count();
 
-        collect($args)->each(function ($arg) use ($method, &$check) {
-            if (!call_user_func([$this, $method], $arg)) {
-                $check = false;
-            }
-        });
-
-        if (!$check) {
-            if ($callback instanceof Closure) {
-                return $callback();
-            }
-
-            return false;
+        if ($reject == 0) {
+            return true;
         }
 
-        return true;
+        return ($callback instanceof Closure) ? $callback() : false;
     }
 
     /**
      * Determine if the user has a permission that should pass through.
      *
-     * @param string $permission
+     * @param string $check
      *
      * @return bool
      */
-    protected function shouldPassThroughPermission($permission): bool
+    protected function shouldPassThroughPermission($check): bool
     {
         // Determine if permission is disable.
-        if (PermissionDB::where('slug', $permission)->get()->first(function ($permission) {return $permission->disable ?? false;})) {
+        $disable = PermissionDB::where('permission', $check)->get()->first(function ($item) {
+            return $item->disable ?? false;
+        });
+        if ($disable) {
             return true;
         }
 
@@ -163,7 +124,7 @@ class Permission
             return false;
         }
 
-        if ($this->user::user()->cannot($this->items_slug, $permission)) {
+        if ($this->user::user()->cannot($this->checker, $check)) {
             $this->error(403);
             return false;
         }
@@ -174,11 +135,11 @@ class Permission
     /**
      * Determine if the user has a route that should pass through.
      *
-     * @param string $permission
+     * @param string $check
      *
      * @return bool
      */
-    protected function shouldPassThroughRoute($route): bool
+    protected function shouldPassThroughRoute($check): bool
     {
         // Get route's visibility.
         if ($similar = Route::similarRoute()) {
@@ -201,7 +162,7 @@ class Permission
             return false;
         }
 
-        if ($this->user::user()->cannot($this->items_slug, $route)) {
+        if ($this->user::user()->cannot($this->checker, $check)) {
             $this->error(403);
             return false;
         }
@@ -212,18 +173,20 @@ class Permission
     /**
      * Determine if the user has a action that should pass through.
      *
-     * @param string $action
+     * @param string $check
      *
      * @return bool
      */
-    protected function shouldPassThroughAction($action): bool
+    protected function shouldPassThroughAction($check): bool
     {
         // Get action's visibility.
-        if (($item = Action::where('slug', $action)->get()->first()) === null) {
-            $visibility = Action::getPublic();
-        } else {
-            $visibility = $item->visibility;
+        if (($action = Action::where('action', '=', $check)->first()) === null) {
+            $action = Action::create([
+                'action' => $check,
+                'name'   => $check,
+            ]);
         }
+        $visibility = $action->visibility;
 
         if (Action::getPublic() == $visibility) {
             return true;
@@ -239,7 +202,7 @@ class Permission
             return false;
         }
 
-        if ($this->user::user()->cannot($this->items_slug, $action)) {
+        if ($this->user::user()->cannot($this->checker, $check)) {
             $this->error(403);
             return false;
         }
@@ -284,12 +247,12 @@ class Permission
      */
     public function user($user = null)
     {
-        $this->user_slug = $user ?? config('admin.default');
+        $this->group = $user ?? config('admin.group');
 
-        $setting = config('admin.permission.' . $this->user_slug);
+        $setting = config('admin.permission.' . $this->group);
 
         if (!class_exists($setting)) {
-            throw new \InvalidArgumentException("Invalid permission user class [$this->user_slug].");
+            throw new \InvalidArgumentException("Invalid permission user class [$this->group].");
         }
 
         $this->user = $setting;

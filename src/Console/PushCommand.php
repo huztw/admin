@@ -2,12 +2,12 @@
 
 namespace Huztw\Admin\Console;
 
-use Huztw\Admin\Database\Seeder\ActionSeeder;
-use Huztw\Admin\Database\Seeder\AssetSeeder;
-use Huztw\Admin\Database\Seeder\BladeSeeder;
-use Huztw\Admin\Database\Seeder\PermissionSeeder;
-use Huztw\Admin\Database\Seeder\RouteSeeder;
-use Huztw\Admin\Database\Seeder\ViewSeeder;
+use Huztw\Admin\Database\Seeds\ActionSeeder;
+use Huztw\Admin\Database\Seeds\AssetSeeder;
+use Huztw\Admin\Database\Seeds\BladeSeeder;
+use Huztw\Admin\Database\Seeds\PermissionSeeder;
+use Huztw\Admin\Database\Seeds\RouteSeeder;
+use Huztw\Admin\Database\Seeds\ViewSeeder;
 
 class PushCommand extends Command
 {

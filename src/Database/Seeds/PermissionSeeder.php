@@ -1,13 +1,14 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Carbon\Carbon;
-use Huztw\Admin\Database\Auth\Action;
+use Huztw\Admin\Database\Auth\Permission;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
-class ActionSeeder extends Seeder
+class PermissionSeeder extends Seeder
 {
     /**
      * @var array
@@ -30,14 +31,14 @@ class ActionSeeder extends Seeder
 
         $this->settings($settings);
 
-        $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
+        $this->items = collect($this->items)->sortBy('permission')->values()->toArray();
 
         // insert to database.
-        Action::insertOrIgnore($this->items);
+        Permission::insertOrIgnore($this->items);
 
         // reset AUTO_INCREMENT
-        $increments = Action::max('id') + 1;
-        DB::statement("ALTER TABLE " . Action::table() . " AUTO_INCREMENT = " . $increments);
+        $increments = Permission::max('id') + 1;
+        DB::statement("ALTER TABLE " . Permission::table() . " AUTO_INCREMENT = " . $increments);
     }
 
     /**
@@ -51,7 +52,7 @@ class ActionSeeder extends Seeder
     {
         $settings = require $this->settingsFile($directory);
 
-        return $settings['actions'] ?? [];
+        return $settings['permissions'] ?? [];
     }
 
     /**
@@ -73,47 +74,45 @@ class ActionSeeder extends Seeder
     /**
      * Start settings.
      *
-     * @param $settings
+     * @param $permissions
      *
      * @return void
      */
-    protected function settings($settings)
+    protected function settings($permissions)
     {
-        $slugs = array_keys($settings);
+        $origins = $this->originData();
 
-        $origins = $this->originSlugs();
-
-        foreach (array_diff($slugs, $origins) as $slug) {
-            $this->setItems(['slug' => $slug, 'name' => $settings[$slug]]);
+        foreach (array_diff($permissions, $origins) as $name => $permission) {
+            $name = is_int($name) ? $permission : $name;
+            $this->setItems(['permission' => $permission, 'name' => $name]);
         }
 
-        foreach (array_diff($origins, $slugs) as $id => $slug) {
-            Action::destroy($id);
-        }
+        foreach (array_intersect($origins, $permissions) as $id => $permission) {
+            $filter = Arr::where($permissions, function ($value, $key) use ($permission) {
+                return $value == $permission;
+            });
 
-        foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = Action::find($id);
+            $name = key($filter);
+            $name = is_int($name) ? $permission : $name;
 
-            $origin->name = $settings[$slug];
-
-            $origin->save();
+            Permission::find($id)->update(['name' => $name]);
         }
     }
 
     /**
-     * Get the original slugs.
+     * Get the original data.
      *
      * @return array
      */
-    protected function originSlugs()
+    protected function originData()
     {
-        $slugs = [];
+        $data = [];
 
-        foreach (Action::get() as $item) {
-            $slugs[$item->id] = $item->slug;
+        foreach (Permission::get() as $item) {
+            $data[$item->id] = $item->permission;
         }
 
-        return $slugs;
+        return $data;
     }
 
     /**
@@ -127,7 +126,7 @@ class ActionSeeder extends Seeder
     {
         array_push($this->items, [
             'name'       => $item['name'],
-            'slug'       => $item['slug'],
+            'permission' => $item['permission'],
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

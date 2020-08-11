@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asset extends Model
 {
-    protected $fillable = ['name', 'slug', 'asset'];
+    protected $fillable = ['asset', 'name'];
 
     /**
      * Create a new Eloquent model instance.

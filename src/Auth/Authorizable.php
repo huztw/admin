@@ -3,6 +3,8 @@
 namespace Huztw\Admin\Auth;
 
 use Illuminate\Foundation\Auth\User;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 /**
  * Abstract Class Authorizable.
@@ -89,12 +91,7 @@ abstract class Authorizable extends User
             });
         }
 
-        return $permissions->map(function ($item, $key) {
-            $item->routes  = $item->routes;
-            $item->actions = $item->actions;
-
-            return $item;
-        });
+        return $permissions;
     }
 
     /**
@@ -108,8 +105,8 @@ abstract class Authorizable extends User
     {
         $permissions = $this->allPermissions($force);
 
-        return $permissions->map(function ($item, $key) {
-            return $item->routes;
+        return $permissions->map(function ($permission, $key) {
+            return $permission->routes;
         })->collapse();
     }
 
@@ -124,8 +121,8 @@ abstract class Authorizable extends User
     {
         $permissions = $this->allPermissions($force);
 
-        return $permissions->map(function ($item, $key) {
-            return $item->actions;
+        return $permissions->map(function ($permission, $key) {
+            return $permission->actions;
         })->collapse();
     }
 
@@ -147,21 +144,13 @@ abstract class Authorizable extends User
             return true;
         }
 
-        if ('permission' == $ability) {
-            return $this->allPermissions()->first(function ($permission) use ($arguments) {
-                return $permission->can($arguments);
-            });
-        } elseif ('route' == $ability) {
-            return $this->allRoutes()->first(function ($route) use ($arguments) {
-                return $route->can($arguments);
-            });
-        } elseif ('action' == $ability) {
-            return $this->allActions()->first(function ($action) use ($arguments) {
-                return $action->can($arguments);
-            });
-        }
+        $method = 'all' . ucfirst(Str::plural($ability));
 
-        return false;
+        $all = call_user_func([$this, $method]);
+
+        return $all->first(function ($checker) use ($arguments) {
+            return $checker->can($arguments);
+        });
     }
 
     /**
@@ -198,7 +187,7 @@ abstract class Authorizable extends User
      */
     public function isRole(string $role): bool
     {
-        return $this->getRoles()->pluck('slug')->contains($role);
+        return $this->getRoles()->pluck('name')->contains($role);
     }
 
     /**
@@ -210,7 +199,7 @@ abstract class Authorizable extends User
      */
     public function inRoles(array $roles = []): bool
     {
-        return $this->getRoles()->pluck('slug')->intersect($roles)->isNotEmpty();
+        return $this->getRoles()->pluck('name')->intersect($roles)->isNotEmpty();
     }
 
     /**
@@ -220,13 +209,13 @@ abstract class Authorizable extends User
      *
      * @return bool
      */
-    public function visible(array $roles = []): bool
+    public function visible($roles = []): bool
     {
         if (empty($roles)) {
             return true;
         }
 
-        $roles = array_column($roles, 'slug');
+        $roles = Arr::wrap($roles);
 
         return $this->inRoles($roles) || $this->isAdministrator();
     }

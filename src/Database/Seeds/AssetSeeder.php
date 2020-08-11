@@ -1,10 +1,11 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Carbon\Carbon;
 use Huztw\Admin\Database\Layout\Asset;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class AssetSeeder extends Seeder
@@ -30,7 +31,7 @@ class AssetSeeder extends Seeder
 
         $this->settings($settings);
 
-        $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
+        $this->items = collect($this->items)->sortBy('asset')->values()->toArray();
 
         // insert to database.
         Asset::insertOrIgnore($this->items);
@@ -73,67 +74,49 @@ class AssetSeeder extends Seeder
     /**
      * Start settings.
      *
-     * @param $settings
+     * @param $assets
      *
      * @return void
      */
-    protected function settings($settings)
+    protected function settings($assets)
     {
-        $slugs = array_keys($settings);
+        $origins = $this->originData();
 
-        $origins = $this->originSlugs();
-
-        foreach (array_diff($slugs, $origins) as $slug) {
-            if (is_array($settings[$slug])) {
-                $name  = !is_int($name = key($settings[$slug])) ? $name : null;
-                $asset = current($settings[$slug]);
-            } else {
-                $asset = $settings[$slug];
-            }
-
-            $this->setItems([
-                'slug'  => $slug,
-                'name'  => $name ?? null,
-                'asset' => $asset,
-            ]);
+        foreach (array_diff($assets, $origins) as $name => $asset) {
+            $name = is_int($name) ? null : $name;
+            $this->setItems(['asset' => $asset, 'name' => $name]);
         }
 
-        foreach (array_diff($origins, $slugs) as $id => $slug) {
+        foreach (array_diff($origins, $assets) as $id => $asset) {
             Asset::destroy($id);
         }
 
-        foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            if (is_array($settings[$slug])) {
-                $name  = !is_int($name = key($settings[$slug])) ? $name : null;
-                $asset = current($settings[$slug]);
-            } else {
-                $asset = $settings[$slug];
-            }
+        foreach (array_intersect($origins, $assets) as $id => $asset) {
+            $filter = Arr::where($assets, function ($value, $key) use ($asset) {
+                return $value == $asset;
+            });
 
-            $origin = Asset::find($id);
+            $name = key($filter);
+            $name = is_int($name) ? null : $name;
 
-            $origin->name = $name ?? null;
-
-            $origin->asset = $asset;
-
-            $origin->save();
+            Asset::find($id)->update(['name' => $name]);
         }
     }
 
     /**
-     * Get the original slugs.
+     * Get the original data.
      *
      * @return array
      */
-    protected function originSlugs()
+    protected function originData()
     {
-        $slugs = [];
+        $data = [];
 
         foreach (Asset::get() as $item) {
-            $slugs[$item->id] = $item->slug;
+            $data[$item->id] = $item->asset;
         }
 
-        return $slugs;
+        return $data;
     }
 
     /**
@@ -146,9 +129,8 @@ class AssetSeeder extends Seeder
     protected function setItems($item)
     {
         array_push($this->items, [
-            'slug'       => $item['slug'],
-            'name'       => $item['name'],
             'asset'      => htmlentities($item['asset'], ENT_COMPAT, 'UTF-8'),
+            'name'       => $item['name'],
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

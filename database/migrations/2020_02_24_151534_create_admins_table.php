@@ -32,15 +32,15 @@ class CreateAdminsTable extends Migration
 
         Schema::create(config('admin.database.roles_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
-            $table->string('name', 50)->unique();
+            $table->string('role', 100)->unique();
+            $table->string('name', 100)->nullable();
             $table->timestamps();
         });
 
         Schema::create(config('admin.database.permissions_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
-            $table->string('name', 50)->unique();
+            $table->string('permission', 100)->unique();
+            $table->string('name', 100)->nullable();
             $table->boolean('disable')->default(false);
             $table->timestamps();
         });
@@ -57,8 +57,8 @@ class CreateAdminsTable extends Migration
 
         Schema::create(config('admin.database.actions_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
-            $table->string('name', 50)->nullable();
+            $table->string('action', 100)->unique();
+            $table->string('name', 100)->nullable();
             $table->string('visibility')->default('protected');
             $table->timestamps();
         });
@@ -110,14 +110,14 @@ class CreateAdminsTable extends Migration
 
         Schema::create(config('admin.database.blades_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
+            $table->string('blade', 50)->unique();
             $table->string('name', 50)->nullable();
             $table->timestamps();
         });
 
         Schema::create(config('admin.database.views_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
+            $table->string('view', 50)->unique();
             $table->string('name', 50)->nullable();
             $table->unsignedBigInteger('blade_id')->nullable();
             $table->foreign('blade_id')->references('id')->on(config('admin.database.blades_table'));
@@ -126,9 +126,8 @@ class CreateAdminsTable extends Migration
 
         Schema::create(config('admin.database.assets_table'), function (Blueprint $table) {
             $table->id();
-            $table->string('slug', 50)->unique();
-            $table->string('name', 50)->nullable();
             $table->string('asset')->unique();
+            $table->string('name', 50)->nullable();
             $table->timestamps();
         });
 
@@ -191,6 +190,7 @@ class CreateAdminsTable extends Migration
         Schema::dropIfExists(config('admin.database.view_assets_table'));
         Schema::dropIfExists(config('admin.database.blade_assets_table'));
         // View
+        Schema::dropIfExists(config('admin.database.assets_table'));
         Schema::dropIfExists(config('admin.database.views_table'));
         Schema::dropIfExists(config('admin.database.blades_table'));
     }

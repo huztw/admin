@@ -69,7 +69,7 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'admin');
+        $this->loadViewsFrom(Admin::resource_path('views'), 'admin');
 
         $this->ensureHttps();
 
@@ -160,32 +160,32 @@ class AdminServiceProvider extends ServiceProvider
     {
         // Publishing the configuration file.
         $this->publishes([
-            __DIR__ . '/../config/' => config_path(),
+            Admin::config_path() => config_path(),
         ], 'admin.config');
 
         // Publishing the migrations.
         $this->publishes([
-            __DIR__ . '/../database/migrations' => database_path('migrations'),
+            Admin::database_path('migrations') => database_path('migrations'),
         ], 'admin-migrations');
 
         // Publishing assets.
         $this->publishes([
-            __DIR__ . '/../resources/assets' => public_path('vendor/huztw-admin'),
+            Admin::resource_path('assets') => public_path('vendor/huztw-admin'),
         ], 'admin-assets');
 
         // Publishing the translation files.
         $this->publishes([
-            __DIR__ . '/../resources/lang' => resource_path('lang'),
+            Admin::resource_path('lang') => resource_path('lang'),
         ], 'admin-lang');
 
         // Publishing the views files.
         $this->publishes([
-            __DIR__ . '/../resources/views/errors' => resource_path('views/errors/admin'),
+            Admin::resource_path('views/errors') => resource_path('views/errors/admin'),
         ], 'admin-errors');
 
         // Publishing the views files.
         $this->publishes([
-            __DIR__ . '/../resources/views/layouts' => resource_path('views/layouts'),
+            Admin::resource_path('views/layouts') => resource_path('views/layouts'),
         ], 'admin-layouts');
 
         // Registering package commands.

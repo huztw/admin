@@ -145,43 +145,41 @@ class Route extends Model
      */
     public static function isMatch($pattern, $route): bool
     {
-        if (Str::is($pattern, rawurldecode($route))) {
-            return true;
-        }
+        $route = rawurldecode($route);
 
-        return false;
+        return Str::is($pattern, $route) || Str::is($route, $pattern);
     }
 
     /**
      * Determine if the route can pass through.
      *
-     * @param \Illuminate\Http\Request|null $request
+     * @param string|array|null $routes
      *
      * @return bool
      */
-    public function can(string $route): bool
+    public function can($routes): bool
     {
-        if (empty($route)) {
-            return true;
+        if (is_array($routes)) {
+            $reject = collect($routes)->map(function ($route, $key) {
+                return $this->can($route);
+            })->reject()->count();
+
+            return ($reject == 0) ? true : false;
         }
 
-        if (self::isMatch($this->http_path, $route)) {
-            return true;
-        }
-
-        return false;
+        return self::isMatch($this->http_path, $routes);
     }
 
     /**
      * Determine if the route can not pass.
      *
-     * @param \Illuminate\Http\Request|null $request
+     * @param string|array|null $routes
      *
      * @return bool
      */
-    public function cannot(Request $request = null): bool
+    public function cannot($routes): bool
     {
-        return !$this->can($request);
+        return !$this->can($routes);
     }
 
     /**

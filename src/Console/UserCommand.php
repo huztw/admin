@@ -3,6 +3,7 @@
 namespace Huztw\Admin\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Arr;
 
 class UserCommand extends Command
 {
@@ -50,9 +51,9 @@ class UserCommand extends Command
                 'username'   => $user->username,
                 'name'       => $user->name,
                 'roles'      => $roles,
-                'permission' => implode("\n", $user->allPermissions(true)->pluck('slug')->toArray()),
+                'permission' => implode("\n", $user->allPermissions(true)->pluck('name')->toArray()),
                 'routes'     => implode("\n", $user->allRoutes(true)->pluck('http_path')->toArray()),
-                'actions'    => implode("\n", $user->allActions(true)->pluck('slug')->toArray()),
+                'actions'    => implode("\n", $user->allActions(true)->pluck('name')->toArray()),
                 'created_at' => date($user->created_at),
                 'updated_at' => date($user->updated_at),
             ];
@@ -108,6 +109,8 @@ class UserCommand extends Command
                 $selectedOption = $roles->pluck('name')->toArray();
 
                 $selected = $this->choice('Please choose a role for the user, or you can use "," to make multiple', $selectedOption, null, null, true);
+
+                $selected = Arr::wrap($selected);
 
                 $roles = $roles->filter(function ($role) use ($selected) {
                     return in_array($role->name, $selected);

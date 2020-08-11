@@ -1,6 +1,6 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Huztw\Admin\Database\Auth\Administrator;
 use Huztw\Admin\Database\Auth\Permission;
@@ -41,21 +41,21 @@ class AdminSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         Role::create([
-            'name' => 'Administrator',
-            'slug' => config('admin.administrator'),
+            'role' => config('admin.administrator'),
+            'name' => config('admin.administrator'),
         ]);
 
         // add role to user.
-        Administrator::first()->roles()->save(Role::first());
+        Administrator::first()->roles()->save(Role::where('role', config('admin.administrator'))->first());
 
         // add permission to role.
         Role::first()->permissions()->save(Permission::first());
 
         // add route to permission.
-        Permission::where('slug', '*')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '*')->first());
-        Permission::where('slug', 'dashboard')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix'))->first());
-        Permission::where('slug', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/login')->first());
-        Permission::where('slug', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/logout')->first());
-        Permission::where('slug', 'auth.register')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/register')->first());
+        Permission::where('permission', '*')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '*')->first());
+        Permission::where('permission', 'dashboard')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix'))->first());
+        Permission::where('permission', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/login')->first());
+        Permission::where('permission', 'auth.login')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/logout')->first());
+        Permission::where('permission', 'auth.register')->first()->routes()->save(Route::where('http_path', config('admin.route.prefix') . '/register')->first());
     }
 }

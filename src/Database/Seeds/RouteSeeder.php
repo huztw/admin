@@ -1,6 +1,6 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Carbon\Carbon;
 use Huztw\Admin\Database\Auth\Route;

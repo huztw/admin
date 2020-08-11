@@ -3,10 +3,11 @@
 namespace Huztw\Admin\Database\Auth;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Role extends Model
 {
-    protected $fillable = ['name', 'slug'];
+    protected $fillable = ['role', 'name'];
 
     /**
      * Create a new Eloquent model instance.
@@ -53,27 +54,39 @@ class Role extends Model
     }
 
     /**
-     * Check user has permission.
+     * Check role has permission.
      *
-     * @param $permission
+     * @param string|array|null $permissions
      *
      * @return bool
      */
-    public function can(string $permission): bool
+    public function can($permissions): bool
     {
-        return $this->permissions()->where('slug', $permission)->exists();
+        if (is_array($permissions)) {
+            $reject = collect($permissions)->map(function ($permission, $key) {
+                return $this->can($permission);
+            })->reject()->count();
+
+            return ($reject == 0) ? true : false;
+        }
+
+        $can = $this->permissions()->get()->first(function ($item) use ($permissions) {
+            return Str::is($permissions, $item->permission) || Str::is($item->permission, $permissions);
+        });
+
+        return $can ? true : false;
     }
 
     /**
-     * Check user has no permission.
+     * Check role has no permission.
      *
-     * @param $permission
+     * @param string|array|null $permissions
      *
      * @return bool
      */
-    public function cannot(string $permission): bool
+    public function cannot($permissions): bool
     {
-        return !$this->can($permission);
+        return !$this->can($permissions);
     }
 
     /**

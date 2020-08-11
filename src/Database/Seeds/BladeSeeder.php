@@ -1,10 +1,11 @@
 <?php
 
-namespace Huztw\Admin\Database\Seeder;
+namespace Huztw\Admin\Database\Seeds;
 
 use Carbon\Carbon;
 use Huztw\Admin\Database\Layout\Blade;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
@@ -33,7 +34,7 @@ class BladeSeeder extends Seeder
 
         $this->settings($settings);
 
-        $this->items = collect($this->items)->sortBy('slug')->values()->toArray();
+        $this->items = collect($this->items)->sortBy('blade')->values()->toArray();
 
         // insert to database.
         Blade::insertOrIgnore($this->items);
@@ -52,7 +53,7 @@ class BladeSeeder extends Seeder
     {
         $admin = [];
 
-        // $admin = collect(File::allFiles(__DIR__ . '/../../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
+        // $admin = collect(File::allFiles(__DIR__ . '/../../' . 'resources' . DIRECTORY_SEPARATOR . 'views'))->map(function ($item) {
         //     return 'admin::' . str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
         // })->filter()->flip()->map(function () {
         //     return null;
@@ -60,9 +61,7 @@ class BladeSeeder extends Seeder
 
         $default = collect(File::allFiles(resource_path('views')))->map(function ($item) {
             return str_replace(DIRECTORY_SEPARATOR, '.', strstr($item->getRelativePathname(), '.blade.php', true));
-        })->filter()->flip()->map(function () {
-            return null;
-        })->toArray();
+        })->filter()->all();
 
         return array_merge($admin, $default);
     }
@@ -100,47 +99,49 @@ class BladeSeeder extends Seeder
     /**
      * Start settings.
      *
-     * @param $settings
+     * @param $blades
      *
      * @return void
      */
-    protected function settings($settings)
+    protected function settings($blades)
     {
-        $slugs = array_keys($settings);
+        $origins = $this->originData();
 
-        $origins = $this->originSlugs();
-
-        foreach (array_diff($slugs, $origins) as $slug) {
-            $this->setItems(['slug' => $slug, 'name' => $settings[$slug]]);
+        foreach (array_diff($blades, $origins) as $name => $blade) {
+            $name = is_int($name) ? null : $name;
+            $this->setItems(['blade' => $blade, 'name' => $name]);
         }
 
-        foreach (array_diff($origins, $slugs) as $id => $slug) {
+        foreach (array_diff($origins, $blades) as $id => $blade) {
             Blade::destroy($id);
         }
 
-        foreach (array_intersect($origins, $slugs) as $id => $slug) {
-            $origin = Blade::find($id);
+        foreach (array_intersect($origins, $blades) as $id => $blade) {
+            $filter = Arr::where($blades, function ($value, $key) use ($blade) {
+                return $value == $blade;
+            });
 
-            $origin->name = $settings[$slug];
+            $name = key($filter);
+            $name = is_int($name) ? null : $name;
 
-            $origin->save();
+            Blade::find($id)->update(['name' => $name]);
         }
     }
 
     /**
-     * Get the original slugs.
+     * Get the original data.
      *
      * @return array
      */
-    protected function originSlugs()
+    protected function originData()
     {
-        $slugs = [];
+        $data = [];
 
         foreach (Blade::get() as $item) {
-            $slugs[$item->id] = $item->slug;
+            $data[$item->id] = $item->blade;
         }
 
-        return $slugs;
+        return $data;
     }
 
     /**
@@ -154,7 +155,7 @@ class BladeSeeder extends Seeder
     {
         array_push($this->items, [
             'name'       => $item['name'],
-            'slug'       => $item['slug'],
+            'blade'      => $item['blade'],
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
