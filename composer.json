@@ -3,7 +3,7 @@
     "description": "laravel admin",
     "type": "library",
     "license": "MIT",
-    "version": "v1.4.1",
+    "version": "v1.4.2",
     "authors": [{
         "name": "noob1118",
         "email": "c0s0c0z0@gmail.com"
@@ -12,11 +12,10 @@
     "keywords": ["Laravel", "Admin"],
     "require": {
         "php": "^7.2.5",
-        "laravel/framework": "^7.0",
-        "laravel/ui": "^2.0"
+        "laravel/ui": "^2.0",
+        "laravel/laravel": "^8.0"
     },
     "require-dev": {
-        "laravel/laravel": "^7.0",
         "fzaninotto/faker": "^1.9.1"
     },
     "autoload": {
