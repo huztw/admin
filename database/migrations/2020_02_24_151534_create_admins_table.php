@@ -63,48 +63,38 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.user_permissions_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('user_id');
-            $table->unsignedBigInteger('permission_id');
-            $table->foreign('user_id')->references('id')->on(config('admin.database.users_table'));
-            $table->foreign('permission_id')->references('id')->on(config('admin.database.permissions_table'));
-            $table->primary(['user_id', 'permission_id'])->index();
+        Schema::create(config('admin.database.permission_users_table'), function (Blueprint $table) {
+            $table->foreignId('permission_id')->constrained(config('admin.database.permissions_table'));
+            $table->foreignId('user_id')->constrained(config('admin.database.users_table'));
+            $table->primary(['permission_id', 'user_id'])->index();
             $table->timestamps();
         });
 
         Schema::create(config('admin.database.role_users_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id');
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('role_id')->references('id')->on(config('admin.database.roles_table'));
-            $table->foreign('user_id')->references('id')->on(config('admin.database.users_table'));
+            $table->foreignId('role_id')->constrained(config('admin.database.roles_table'));
+            $table->foreignId('user_id')->constrained(config('admin.database.users_table'));
             $table->primary(['role_id', 'user_id'])->index();
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.role_permissions_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('role_id');
-            $table->unsignedBigInteger('permission_id');
-            $table->foreign('role_id')->references('id')->on(config('admin.database.roles_table'));
-            $table->foreign('permission_id')->references('id')->on(config('admin.database.permissions_table'));
-            $table->primary(['role_id', 'permission_id'])->index();
+        Schema::create(config('admin.database.permission_roles_table'), function (Blueprint $table) {
+            $table->foreignId('permission_id')->constrained(config('admin.database.permissions_table'));
+            $table->foreignId('role_id')->constrained(config('admin.database.roles_table'));
+            $table->primary(['permission_id', 'role_id'])->index();
             $table->timestamps();
         });
 
         Schema::create(config('admin.database.permission_routes_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('permission_id');
-            $table->unsignedBigInteger('route_id');
-            $table->foreign('permission_id')->references('id')->on(config('admin.database.permissions_table'));
-            $table->foreign('route_id')->references('id')->on(config('admin.database.routes_table'));
+            $table->foreignId('permission_id')->constrained(config('admin.database.permissions_table'));
+            $table->foreignId('route_id')->constrained(config('admin.database.routes_table'));
             $table->primary(['permission_id', 'route_id'])->index();
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.permission_actions_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('permission_id');
-            $table->unsignedBigInteger('action_id');
-            $table->foreign('permission_id')->references('id')->on(config('admin.database.permissions_table'));
-            $table->foreign('action_id')->references('id')->on(config('admin.database.actions_table'));
-            $table->primary(['permission_id', 'action_id'])->index();
+        Schema::create(config('admin.database.action_permissions_table'), function (Blueprint $table) {
+            $table->foreignId('action_id')->constrained(config('admin.database.actions_table'));
+            $table->foreignId('permission_id')->constrained(config('admin.database.permissions_table'));
+            $table->primary(['action_id', 'permission_id'])->index();
             $table->timestamps();
         });
 
@@ -119,8 +109,7 @@ class CreateAdminsTable extends Migration
             $table->id();
             $table->string('view', 50)->unique();
             $table->string('name', 50)->nullable();
-            $table->unsignedBigInteger('blade_id')->nullable();
-            $table->foreign('blade_id')->references('id')->on(config('admin.database.blades_table'));
+            $table->foreignId('blade_id')->constrained(config('admin.database.blades_table'));
             $table->timestamps();
         });
 
@@ -131,34 +120,28 @@ class CreateAdminsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.view_blades_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('view_id');
-            $table->unsignedBigInteger('blade_id');
-            $table->foreign('view_id')->references('id')->on(config('admin.database.views_table'));
-            $table->foreign('blade_id')->references('id')->on(config('admin.database.blades_table'));
-            $table->primary(['view_id', 'blade_id'])->index();
+        Schema::create(config('admin.database.blade_views_table'), function (Blueprint $table) {
+            $table->foreignId('blade_id')->constrained(config('admin.database.blades_table'));
+            $table->foreignId('view_id')->constrained(config('admin.database.views_table'));
+            $table->primary(['blade_id', 'view_id'])->index();
             $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.view_assets_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('view_id');
-            $table->unsignedBigInteger('asset_id');
-            $table->foreign('view_id')->references('id')->on(config('admin.database.views_table'));
-            $table->foreign('asset_id')->references('id')->on(config('admin.database.assets_table'));
-            $table->primary(['view_id', 'asset_id'])->index();
+        Schema::create(config('admin.database.asset_views_table'), function (Blueprint $table) {
+            $table->foreignId('asset_id')->constrained(config('admin.database.assets_table'));
+            $table->foreignId('view_id')->constrained(config('admin.database.views_table'));
+            $table->primary(['asset_id', 'view_id'])->index();
             $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
         });
 
-        Schema::create(config('admin.database.blade_assets_table'), function (Blueprint $table) {
-            $table->unsignedBigInteger('blade_id');
-            $table->unsignedBigInteger('asset_id');
-            $table->foreign('blade_id')->references('id')->on(config('admin.database.blades_table'));
-            $table->foreign('asset_id')->references('id')->on(config('admin.database.assets_table'));
-            $table->primary(['blade_id', 'asset_id', 'type', 'sort'])->index();
+        Schema::create(config('admin.database.asset_blades_table'), function (Blueprint $table) {
+            $table->foreignId('asset_id')->constrained(config('admin.database.assets_table'));
+            $table->foreignId('blade_id')->constrained(config('admin.database.blades_table'));
+            $table->primary(['asset_id', 'blade_id', 'type', 'sort'])->index();
             $table->string('type', 50)->nullable();
             $table->integer('sort');
             $table->timestamps();
@@ -174,10 +157,10 @@ class CreateAdminsTable extends Migration
     {
         // Auth Relationship
         Schema::dropIfExists(config('admin.database.role_users_table'));
-        Schema::dropIfExists(config('admin.database.user_permissions_table'));
-        Schema::dropIfExists(config('admin.database.role_permissions_table'));
+        Schema::dropIfExists(config('admin.database.permission_users_table'));
+        Schema::dropIfExists(config('admin.database.permission_roles_table'));
         Schema::dropIfExists(config('admin.database.permission_routes_table'));
-        Schema::dropIfExists(config('admin.database.permission_actions_table'));
+        Schema::dropIfExists(config('admin.database.action_permissions_table'));
         // Auth
         Schema::dropIfExists(config('admin.database.users_table'));
         Schema::dropIfExists(config('admin.database.roles_table'));
@@ -186,9 +169,9 @@ class CreateAdminsTable extends Migration
         Schema::dropIfExists(config('admin.database.actions_table'));
 
         // View Relationship
-        Schema::dropIfExists(config('admin.database.view_blades_table'));
-        Schema::dropIfExists(config('admin.database.view_assets_table'));
-        Schema::dropIfExists(config('admin.database.blade_assets_table'));
+        Schema::dropIfExists(config('admin.database.blade_views_table'));
+        Schema::dropIfExists(config('admin.database.asset_views_table'));
+        Schema::dropIfExists(config('admin.database.asset_blades_table'));
         // View
         Schema::dropIfExists(config('admin.database.assets_table'));
         Schema::dropIfExists(config('admin.database.views_table'));

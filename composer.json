@@ -3,9 +3,8 @@
     "description": "laravel admin",
     "type": "library",
     "license": "MIT",
-    "version": "v1.4.2",
     "authors": [{
-        "name": "noob1118",
+        "name": "huztw",
         "email": "c0s0c0z0@gmail.com"
     }],
     "homepage": "https://github.com/huztw/admin",

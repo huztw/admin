@@ -46,7 +46,7 @@ class Role extends Model
      */
     public function permissions()
     {
-        $pivotTable = config('admin.database.role_permissions_table');
+        $pivotTable = config('admin.database.permission_roles_table');
 
         $relatedModel = config('admin.database.permissions_model');
 

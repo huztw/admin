@@ -51,7 +51,7 @@ class Administrator extends Authorizable
      */
     public function permissions()
     {
-        $pivotTable = config('admin.database.user_permissions_table');
+        $pivotTable = config('admin.database.permission_users_table');
 
         $relatedModel = config('admin.database.permissions_model');
 

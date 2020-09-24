@@ -45,7 +45,7 @@ class Permission extends Model
      */
     public function roles()
     {
-        $pivotTable = config('admin.database.role_permissions_table');
+        $pivotTable = config('admin.database.permission_roles_table');
 
         $relatedModel = config('admin.database.roles_model');
 
@@ -73,7 +73,7 @@ class Permission extends Model
      */
     public function actions()
     {
-        $pivotTable = config('admin.database.permission_actions_table');
+        $pivotTable = config('admin.database.action_permissions_table');
 
         $relatedModel = config('admin.database.actions_model');
 

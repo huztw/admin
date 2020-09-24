@@ -253,15 +253,15 @@ return [
 
         // Pivot table for table above.
         'operation_log_table'      => 'admin_operation_log',
-        'user_permissions_table'   => 'admin_user_permissions',
+        'permission_users_table'   => 'admin_permission_users',
         'role_users_table'         => 'admin_role_users',
-        'role_permissions_table'   => 'admin_role_permissions',
+        'permission_roles_table'   => 'admin_permission_roles',
         'role_menu_table'          => 'admin_role_menu',
         'permission_routes_table'  => 'admin_permission_routes',
-        'permission_actions_table' => 'admin_permission_actions',
-        'view_blades_table'        => 'admin_view_blades',
-        'view_assets_table'        => 'admin_view_assets',
-        'blade_assets_table'       => 'admin_blade_assets',
+        'action_permissions_table' => 'admin_action_permissions',
+        'blade_views_table'        => 'admin_blade_views',
+        'asset_views_table'        => 'admin_asset_views',
+        'asset_blades_table'       => 'admin_asset_blades',
     ],
 
     /*

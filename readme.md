@@ -1,5 +1,5 @@
 <p align="center">
-Huztw Admin
+Laravel Admin
 </p>
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
@@ -7,9 +7,9 @@ Huztw Admin
 
 ## Installation
 
-> This package requires PHP 7+ and Laravel 5.5
+> This package requires PHP 7+ and Laravel 8
 
-First, install laravel 5.5, and make sure that the database connection settings are correct.
+First, install laravel 8, and make sure that the database connection settings are correct.
 
 ``` bash
 $ composer require huztw/admin
@@ -34,7 +34,7 @@ Open `http://localhost/admin/` in browser,use username `admin` and password `adm
 ## Requirements
 
  - PHP >= 7.0.0
- - Laravel >= 5.5.0
+ - Laravel >= 8
  - Fileinfo PHP Extension
 
 ## Configurations
@@ -61,7 +61,7 @@ If you discover any security related issues, please email c0s0c0z0@gmail.com ins
 
 ## Credits
 
-- [noob1118][link-author]
+- [huztw][link-author]
 - [All Contributors][link-contributors]
 
 ## License

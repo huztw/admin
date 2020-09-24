@@ -41,7 +41,7 @@ class Blade extends Model
      */
     public function views()
     {
-        $pivotTable = config('admin.database.view_blades_table');
+        $pivotTable = config('admin.database.blade_views_table');
 
         $relatedModel = config('admin.database.views_model');
 
@@ -55,7 +55,7 @@ class Blade extends Model
      */
     public function assets()
     {
-        $pivotTable = config('admin.database.blade_assets_table');
+        $pivotTable = config('admin.database.asset_blades_table');
 
         $relatedModel = config('admin.database.assets_model');
 

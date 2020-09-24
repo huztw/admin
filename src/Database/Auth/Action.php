@@ -60,7 +60,7 @@ class Action extends Model
      */
     public function permissions()
     {
-        $pivotTable = config('admin.database.permission_actions_table');
+        $pivotTable = config('admin.database.action_permissions_table');
 
         $relatedModel = config('admin.database.permissions_model');
 
